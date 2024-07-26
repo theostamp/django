@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <title>Επιλογή Συνδρομής</title>
+</head>
+<body>
+    <h1>Επιλογή Συνδρομής</h1>
+    <form method="post" action="{% url 'select_subscription' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Υποβολή</button>
+    </form>
+</body>
+</html>
