@@ -122,7 +122,7 @@ def register(request):
     else:
         form = CustomUserCreationForm()
 
-    return render(request, 'authentication/signup.html', {'form': form})
+    return render(request, 'authentication/register.html', {'form': form})
 
 @login_required
 def select_subscription(request):
