@@ -6,14 +6,15 @@
 git init
 
 git add .
-git commit -m "2"
+git commit -m "3"
 git branch -M main
 git remote add origin https://github.com/theostamp/django.git
 git push -u origin main 
 
 git push -u origin main --force
 
-
+  cp .env.sample.devcontainer .env
+  python manage.py runserver 8003
 
 chmod +x start1.sh
 ./start1.sh

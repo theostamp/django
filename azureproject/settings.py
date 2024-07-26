@@ -71,10 +71,14 @@ DATABASE_ROUTERS = (
 
 AUTH_USER_MODEL = 'authentication.CustomUser'
 
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'DIRS': [
+            # Προσθέστε το path στον φάκελο templates αν δεν είναι εκεί
+            BASE_DIR / 'templates',
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
