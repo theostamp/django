@@ -3,6 +3,7 @@ from .forms import RegistrationForm
 from .models import Tenant  # Υποθέτοντας ότι το μοντέλο του tenant είναι Tenant
 from django.shortcuts import render, redirect
 from .forms import SubscriptionForm
+from django.contrib.auth.decorators import login_required
 
 
 from django_tenants.middleware.main import TenantMainMiddleware
@@ -46,3 +47,7 @@ def register(request):
         form = RegistrationForm()
 
     return render(request, 'registration/register.html', {'form': form})
+
+@login_required
+def profile_view(request):
+    return render(request, 'tenants/profile.html')
