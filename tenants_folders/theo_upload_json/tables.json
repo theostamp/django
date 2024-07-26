@@ -2,57 +2,90 @@
     "tables": [
         {
             "table_number": 1,
-            "occupied_since": "2024-07-13 13:48:06",
-            "duration": "20:57:34",
+            "occupied_since": "",
+            "duration": "",
             "center_coordinates": [
-                268.0,
-                186.0,
-                491.0,
-                276.0
+                421.0,
+                380.0,
+                643.0,
+                483.0
             ]
         },
         {
             "table_number": 2,
-            "occupied_since": "2024-07-13 13:48:06",
-            "duration": "20:57:34",
+            "occupied_since": "2024-07-26 14:40:14",
+            "duration": "0:01:00",
             "center_coordinates": [
-                122.0,
-                129.0,
-                254.0,
-                184.0
+                582.0,
+                220.0,
+                649.0,
+                290.0
             ]
         },
         {
             "table_number": 3,
-            "occupied_since": "2024-07-13 13:48:06",
-            "duration": "20:57:34",
+            "occupied_since": "2024-07-26 14:40:14",
+            "duration": "0:01:00",
             "center_coordinates": [
-                25.0,
-                90.0,
-                157.0,
-                125.0
+                75.0,
+                289.0,
+                333.0,
+                355.0
             ]
         },
         {
             "table_number": 4,
-            "occupied_since": "2024-07-13 13:48:06",
-            "duration": "20:57:34",
+            "occupied_since": "2024-07-26 14:40:14",
+            "duration": "0:01:00",
             "center_coordinates": [
-                300.0,
-                64.0,
-                406.0,
-                125.0
+                363.0,
+                209.0,
+                500.0,
+                256.0
             ]
         },
         {
             "table_number": 5,
+            "occupied_since": "2024-07-26 14:40:14",
+            "duration": "0:01:00",
+            "center_coordinates": [
+                216.0,
+                177.0,
+                338.0,
+                228.0
+            ]
+        },
+        {
+            "table_number": 6,
             "occupied_since": "",
             "duration": "",
             "center_coordinates": [
-                3.0,
-                57.0,
-                64.0,
-                83.0
+                342.0,
+                162.0,
+                416.0,
+                193.0
+            ]
+        },
+        {
+            "table_number": 7,
+            "occupied_since": "2024-07-26 14:40:14",
+            "duration": "0:01:00",
+            "center_coordinates": [
+                84.0,
+                155.0,
+                180.0,
+                186.0
+            ]
+        },
+        {
+            "table_number": 8,
+            "occupied_since": "",
+            "duration": "",
+            "center_coordinates": [
+                24.0,
+                211.0,
+                186.0,
+                270.0
             ]
         }
     ]
