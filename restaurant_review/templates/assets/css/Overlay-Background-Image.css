@@ -1,0 +1,45 @@
+.section-overlay {
+  height: 100%;
+  backdrop-filter: opacity(1);
+  -webkit-backdrop-filter: opacity(1);
+  width: 100%;
+  margin: 0;
+  display: flex;
+  place-items: center;
+  place-content: center;
+  background-image: linear-gradient(135deg, var(--primary),var(--secondary)), url("mountain-and-forest-bkg.jpg");
+  background: url("mountain and forest_wallpaper.jpg") center / cover no-repeat;
+}
+
+.titulo2 {
+  display: flex;
+  font-family: Playball;
+  font-size: 6.5rem;
+  color: #fff;
+  text-shadow: #5E5858 4px 4px 8px;
+}
+
+@media (min-width: 354px) {
+  .titulo2 {
+    font-size: 4rem;
+    justify-content: center;
+    align-content: center;
+    text-align: center;
+  }
+}
+
+.textos {
+}
+
+@media (min-width: 768px) {
+  .titulo2 {
+    font-size: 80px;
+  }
+}
+
+@media (min-width: 1400px) {
+  .titulo2 {
+    font-size: 100px;
+  }
+}
+

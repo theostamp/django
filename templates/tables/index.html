@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Page</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <!-- Προσθέστε επιπλέον CSS αν χρειάζεται -->
+</head>
+<body>
+    <header>
+        <h1>Καλώς ήρθατε στην εφαρμογή μας!</h1>
+    </header>
+
+    <main>
+        <div class="container">
+            <h2>Επιλέξτε ενέργεια:</h2>
+            <div class="buttons">
+                <a href="{% url 'login' %}" class="btn">Είσοδος</a>
+                <a href="{% url 'register' %}" class="btn">Εγγραφή</a>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Η Εταιρεία μας</p>
+    </footer>
+</body>
+</html>

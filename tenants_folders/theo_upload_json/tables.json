@@ -1,0 +1,59 @@
+{
+    "tables": [
+        {
+            "table_number": 1,
+            "occupied_since": "2024-07-13 13:48:06",
+            "duration": "20:57:34",
+            "center_coordinates": [
+                268.0,
+                186.0,
+                491.0,
+                276.0
+            ]
+        },
+        {
+            "table_number": 2,
+            "occupied_since": "2024-07-13 13:48:06",
+            "duration": "20:57:34",
+            "center_coordinates": [
+                122.0,
+                129.0,
+                254.0,
+                184.0
+            ]
+        },
+        {
+            "table_number": 3,
+            "occupied_since": "2024-07-13 13:48:06",
+            "duration": "20:57:34",
+            "center_coordinates": [
+                25.0,
+                90.0,
+                157.0,
+                125.0
+            ]
+        },
+        {
+            "table_number": 4,
+            "occupied_since": "2024-07-13 13:48:06",
+            "duration": "20:57:34",
+            "center_coordinates": [
+                300.0,
+                64.0,
+                406.0,
+                125.0
+            ]
+        },
+        {
+            "table_number": 5,
+            "occupied_since": "",
+            "duration": "",
+            "center_coordinates": [
+                3.0,
+                57.0,
+                64.0,
+                83.0
+            ]
+        }
+    ]
+}

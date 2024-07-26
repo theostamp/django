@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Εγγραφή Χρήστη</title>
+</head>
+<body>
+    <h2>Φόρμα Εγγραφής</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Εγγραφή</button>
+    </form>
+</body>
+</html>

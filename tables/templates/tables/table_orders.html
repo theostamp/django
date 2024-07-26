@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <title>Orders for Table {{ table_number }}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h2>Orders for Table {{ table_number }}</h2>
+        <a href="/table_selection_with_time_diff/" class="btn btn-primary mb-3">Back to Table Selection</a>
+        {% load custom_filters %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Product Description</th>
+                    <th>Quantity</th>
+                    <th>Total Cost</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>{{ order.product_description }}</td>
+                    <td>{{ order.quantity }}</td>
+                    <td>{{ order.total_cost }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="2"><strong>Grand Total</strong></td>
+                    <td><strong>{{ orders|calc_total_cost }}</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</body>
+</html>
