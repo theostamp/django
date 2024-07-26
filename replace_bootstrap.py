@@ -15,22 +15,22 @@ def convert_html_to_django(html_content):
     # Αντικατάσταση των στοιχείων <link> για CSS
     for link in soup.find_all('link', {'rel': 'stylesheet'}):
         href = link.get('href')
-        if href and href.startswith('/assets/'):
-            new_href = "{% static '" + href.lstrip('/') + "' %}"
+        if href and '/assets/' in href:
+            new_href = "{% static '" + href.split('?')[0].lstrip('/') + "' %}"
             link['href'] = new_href
 
     # Αντικατάσταση των στοιχείων <script> για JavaScript
     for script in soup.find_all('script', src=True):
         src = script['src']
-        if src and src.startswith('/assets/'):
-            new_src = "{% static '" + src.lstrip('/') + "' %}"
+        if src and '/assets/' in src:
+            new_src = "{% static '" + src.split('?')[0].lstrip('/') + "' %}"
             script['src'] = new_src
 
     # Αντικατάσταση των διαδρομών για τις εικόνες
     for img in soup.find_all('img', src=True):
         src = img['src']
-        if src and src.startswith('/assets/'):
-            new_src = "{% static '" + src.lstrip('/') + "' %}"
+        if src and '/assets/' in src:
+            new_src = "{% static '" + src.split('?')[0].lstrip('/') + "' %}"
             img['src'] = new_src
 
     # Αντικατάσταση των URL
