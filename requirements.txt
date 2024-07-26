@@ -13,5 +13,6 @@ django-cors-headers
 channels
 requests
 django-tenants
+beautifulsoup4
 
 

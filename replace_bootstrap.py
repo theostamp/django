@@ -1,3 +1,50 @@
+from bs4 import BeautifulSoup
+import re
+
+def convert_html_to_django(html_content):
+    # Δημιουργία ενός BeautifulSoup αντικειμένου
+    soup = BeautifulSoup(html_content, 'html.parser')
+
+    # Προσθήκη του {% load static %} κάτω από τον τίτλο
+    head = soup.find('head')
+    if head:
+        load_static_tag = soup.new_tag('script', type='text/template')
+        load_static_tag.string = '{% load static %}'
+        head.insert(1, load_static_tag)
+
+    # Αντικατάσταση των στοιχείων <link> για CSS
+    for link in soup.find_all('link', {'rel': 'stylesheet'}):
+        href = link.get('href')
+        if href and href.startswith('/assets/'):
+            new_href = "{% static '" + href.lstrip('/') + "' %}"
+            link['href'] = new_href
+
+    # Αντικατάσταση των στοιχείων <script> για JavaScript
+    for script in soup.find_all('script', src=True):
+        src = script['src']
+        if src and src.startswith('/assets/'):
+            new_src = "{% static '" + src.lstrip('/') + "' %}"
+            script['src'] = new_src
+
+    # Αντικατάσταση των διαδρομών για τις εικόνες
+    for img in soup.find_all('img', src=True):
+        src = img['src']
+        if src and src.startswith('/assets/'):
+            new_src = "{% static '" + src.lstrip('/') + "' %}"
+            img['src'] = new_src
+
+    # Αντικατάσταση των URL
+    for a in soup.find_all('a', href=True):
+        href = a['href']
+        if href and href.endswith('.html'):
+            url_name = re.sub(r'\.html$', '', href.lstrip('/'))
+            new_href = "{% url '" + url_name + "' %}"
+            a['href'] = new_href
+
+    return str(soup)
+
+# Παράδειγμα χρήσης
+html_content = """
 <!DOCTYPE html>
 <html data-bs-theme="light" lang="el">
 
@@ -190,3 +237,7 @@
 </body>
 
 </html>
+"""
+
+converted_html = convert_html_to_django(html_content)
+print(converted_html)
