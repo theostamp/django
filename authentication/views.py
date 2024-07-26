@@ -182,7 +182,7 @@ def pricing(request):
     return render(request, 'authentication/pricing.html')
 
 def contacts(request):
-    return render(request, 'authentication/contacts.html')
+    return render(request, 'contacts.html')
 
 def index(request):
     return render(request, '/')

@@ -31,4 +31,5 @@ urlpatterns = [
     # path('', views.index, name='index'),
     # path('', include('main.urls')),  # Κεντρική διαδρομή για την εφαρμογή main
     path('get-csrf-token/', get_csrf_token, name='get_csrf_token'), 
+    path('accounts/', include('django.contrib.auth.urls')),
 ]
