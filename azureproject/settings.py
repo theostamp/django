@@ -160,3 +160,4 @@ LOGGING = {
 }
 
 TENANTS_BASE_FOLDER = os.path.join(BASE_DIR, 'tenants_folders')
+CSRF_TRUSTED_ORIGINS = ['http://localhost:8003']
