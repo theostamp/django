@@ -185,4 +185,4 @@ def contacts(request):
     return render(request, 'authentication/contacts.html')
 
 def index(request):
-    return render(request, '/')
+    return render(request, 'authentication/ ')
