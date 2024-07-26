@@ -51,7 +51,7 @@ html_content = """
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-    <title>Integrations - Brand</title>
+    <title>Contacts - Brand</title>
     <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css?h=91180125d193e45e653b99b7314045c4">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800&amp;display=swap">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=ABeeZee&amp;display=swap">
@@ -64,119 +64,70 @@ html_content = """
                 <ul class="navbar-nav mx-auto">
                     <li class="nav-item"><a class="nav-link" href="/index.html">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="/features.html">Features</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="/integrations.html">Integrations</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/integrations.html">Integrations</a></li>
                     <li class="nav-item"><a class="nav-link" href="/pricing.html">Pricing</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/contacts.html">Contacts</a></li>
-                </ul><a class="btn btn-primary shadow" role="button" href="/signup.html">Sign up</a>
+                    <li class="nav-item"><a class="nav-link active" href="/contacts.html">Contacts</a></li>
+                </ul><a class="btn btn-primary shadow" role="button" href="/register.html">Sign up</a>
             </div>
         </div>
     </nav>
     <section class="py-5 mt-5">
-        <div class="container py-4 py-xl-5">
-            <div class="row gy-4 gy-md-0">
-                <div class="col-md-6 text-center text-md-start d-flex d-sm-flex d-md-flex justify-content-center align-items-center justify-content-md-start align-items-md-center justify-content-xl-center">
-                    <div style="max-width: 350px;">
-                        <h1 class="display-5 fw-bold mb-4">Skyrocket your productivity with our&nbsp;<span class="underline">tools</span>.</h1>
-                        <p class="text-muted my-4">Tincidunt laoreet leo, adipiscing taciti tempor. Primis senectus sapien, risus donec ad fusce augue interdum.</p><a class="btn btn-primary btn-lg me-2" role="button" href="#">Button</a><a class="btn btn-light btn-lg" role="button" href="#">Button</a>
-                    </div>
+        <div class="container py-5">
+            <div class="row">
+                <div class="col-md-8 col-xl-6 text-center mx-auto">
+                    <h2 class="display-6 fw-bold mb-4">Got any <span class="underline">questions</span>?</h2>
+                    <p class="text-muted">Our team is always here to help. Send us a message and we'll get back to you shortly.</p>
                 </div>
+            </div>
+            <div class="row d-flex justify-content-center">
                 <div class="col-md-6">
-                    <div><img class="rounded img-fluid w-100 fit-cover" style="min-height: 300px;" src="/assets/img/illustrations/startup.svg?h=bd2b171f88c19ebbeec0b05e852bfefb"></div>
+                    <div>
+                        <form class="p-3 p-xl-4" method="post" data-bs-theme="light">
+                            <div class="mb-3"><input class="shadow form-control" type="text" id="name-1" name="name" placeholder="Name"></div>
+                            <div class="mb-3"><input class="shadow form-control" type="email" id="email-1" name="email" placeholder="Email"></div>
+                            <div class="mb-3"><textarea class="shadow form-control" id="message-1" name="message" rows="6" placeholder="Message"></textarea></div>
+                            <div><button class="btn btn-primary shadow d-block w-100" type="submit">Send </button></div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
-    <section class="py-5">
-        <div class="container py-5">
-            <div class="row row-cols-1 row-cols-md-2 mx-auto" style="max-width: 900px;">
-                <div class="col mb-5"><img class="rounded img-fluid" src="/assets/img/illustrations/data-management.svg?h=f9e8d7ce05be9b4c475951324c08ab83"></div>
-                <div class="col d-md-flex align-items-md-end align-items-lg-center mb-5">
-                    <div>
-                        <h5 class="fs-3 fw-bold mb-4">Data management&nbsp;tools</h5>
-                        <p class="text-muted mb-4">Erat netus est hendrerit, nullam et quis ad cras porttitor iaculis. Bibendum vulputate cras aenean.</p><a class="fw-bold mb-3" href="#">Browse tools&nbsp;<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-arrow-narrow-right fs-3">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                <path d="M5 12l14 0"></path>
-                                <path d="M15 16l4 -4"></path>
-                                <path d="M15 8l4 4"></path>
-                            </svg></a>
-                        <div class="d-flex">
-                            <div class="bs-icon-sm bs-icon-rounded bs-icon-secondary d-flex flex-shrink-0 justify-content-center align-items-center d-inline-block bs-icon me-2"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-school">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                    <path d="M22 9l-10 -4l-10 4l10 4l10 -4v6"></path>
-                                    <path d="M6 10.6v5.4a6 3 0 0 0 12 0v-5.4"></path>
-                                </svg></div>
-                            <div class="bs-icon-sm bs-icon-rounded bs-icon-secondary d-flex flex-shrink-0 justify-content-center align-items-center d-inline-block bs-icon me-2"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-school">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                    <path d="M22 9l-10 -4l-10 4l10 4l10 -4v6"></path>
-                                    <path d="M6 10.6v5.4a6 3 0 0 0 12 0v-5.4"></path>
-                                </svg></div>
-                            <div class="bs-icon-sm bs-icon-rounded bs-icon-secondary d-flex flex-shrink-0 justify-content-center align-items-center d-inline-block bs-icon me-2"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-school">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                    <path d="M22 9l-10 -4l-10 4l10 4l10 -4v6"></path>
-                                    <path d="M6 10.6v5.4a6 3 0 0 0 12 0v-5.4"></path>
-                                </svg></div>
-                        </div>
-                    </div>
+    <section class="py-4 py-xl-5 mb-5">
+        <div class="container">
+            <div class="row mb-2">
+                <div class="col-md-8 col-xl-6 text-center mx-auto">
+                    <h2 class="display-6 fw-bold mb-5"><span class="pb-3 underline">FAQ<br></span></h2>
+                    <p class="text-muted mb-5">Curae hendrerit donec commodo hendrerit egestas tempus, turpis facilisis nostra nunc. Vestibulum dui eget ultrices.</p>
                 </div>
             </div>
-            <div class="row row-cols-1 row-cols-md-2 mx-auto" style="max-width: 900px;">
-                <div class="col order-md-last mb-5"><img class="rounded img-fluid" src="/assets/img/illustrations/javascript.svg?h=eafecf9f73d4396002873811619dadf5"></div>
-                <div class="col d-md-flex align-items-md-end align-items-lg-center mb-5">
-                    <div class="ms-md-3">
-                        <h5 class="fs-3 fw-bold mb-4">Data management&nbsp;tools</h5>
-                        <p class="text-muted mb-4">Erat netus est hendrerit, nullam et quis ad cras porttitor iaculis. Bibendum vulputate cras aenean.</p><a class="fw-bold" href="#">Browse tools&nbsp;<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-arrow-narrow-right fs-3">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                <path d="M5 12l14 0"></path>
-                                <path d="M15 16l4 -4"></path>
-                                <path d="M15 8l4 4"></path>
-                            </svg></a>
-                        <div class="d-flex">
-                            <div class="bs-icon-sm bs-icon-rounded bs-icon-secondary d-flex flex-shrink-0 justify-content-center align-items-center d-inline-block bs-icon me-2"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-school">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                    <path d="M22 9l-10 -4l-10 4l10 4l10 -4v6"></path>
-                                    <path d="M6 10.6v5.4a6 3 0 0 0 12 0v-5.4"></path>
-                                </svg></div>
-                            <div class="bs-icon-sm bs-icon-rounded bs-icon-secondary d-flex flex-shrink-0 justify-content-center align-items-center d-inline-block bs-icon me-2"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-school">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                    <path d="M22 9l-10 -4l-10 4l10 4l10 -4v6"></path>
-                                    <path d="M6 10.6v5.4a6 3 0 0 0 12 0v-5.4"></path>
-                                </svg></div>
-                            <div class="bs-icon-sm bs-icon-rounded bs-icon-secondary d-flex flex-shrink-0 justify-content-center align-items-center d-inline-block bs-icon me-2"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-school">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                    <path d="M22 9l-10 -4l-10 4l10 4l10 -4v6"></path>
-                                    <path d="M6 10.6v5.4a6 3 0 0 0 12 0v-5.4"></path>
-                                </svg></div>
+            <div class="row mb-2">
+                <div class="col-md-8 mx-auto">
+                    <div class="accordion text-muted" role="tablist" id="accordion-1">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" role="tab"><button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordion-1 .item-1" aria-expanded="true" aria-controls="accordion-1 .item-1">Aenean arcu euismod aliquam, volutpat consequat?</button></h2>
+                            <div class="accordion-collapse collapse show item-1" role="tabpanel" data-bs-parent="#accordion-1">
+                                <div class="accordion-body">
+                                    <p>Maecenas diam volutpat, erat quis enim cras lobortis vivamus donec tempor. Congue ultrices donec turpis vivamus. Laoreet aenean metus, mi nunc massa feugiat duis. Pharetra erat consequat purus curae quisque, etiam accumsan class.</p>
+                                    <p class="mb-0">Commodo rutrum quisque curabitur habitasse, suspendisse etiam.</p>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row row-cols-1 row-cols-md-2 mx-auto" style="max-width: 900px;">
-                <div class="col mb-5"><img class="rounded img-fluid" src="/assets/img/illustrations/report.svg?h=a384f0b462eb4b0ee8a06da50af2cd10"></div>
-                <div class="col d-md-flex align-items-md-end align-items-lg-center mb-5">
-                    <div>
-                        <h5 class="fs-3 fw-bold mb-4">Data management&nbsp;tools</h5>
-                        <p class="text-muted mb-4">Erat netus est hendrerit, nullam et quis ad cras porttitor iaculis. Bibendum vulputate cras aenean.</p><a class="fw-bold" href="#">Browse tools&nbsp;<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-arrow-narrow-right fs-3">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                <path d="M5 12l14 0"></path>
-                                <path d="M15 16l4 -4"></path>
-                                <path d="M15 8l4 4"></path>
-                            </svg></a>
-                        <div class="d-flex">
-                            <div class="bs-icon-sm bs-icon-rounded bs-icon-secondary d-flex flex-shrink-0 justify-content-center align-items-center d-inline-block bs-icon me-2"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-school">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                    <path d="M22 9l-10 -4l-10 4l10 4l10 -4v6"></path>
-                                    <path d="M6 10.6v5.4a6 3 0 0 0 12 0v-5.4"></path>
-                                </svg></div>
-                            <div class="bs-icon-sm bs-icon-rounded bs-icon-secondary d-flex flex-shrink-0 justify-content-center align-items-center d-inline-block bs-icon me-2"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-school">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                    <path d="M22 9l-10 -4l-10 4l10 4l10 -4v6"></path>
-                                    <path d="M6 10.6v5.4a6 3 0 0 0 12 0v-5.4"></path>
-                                </svg></div>
-                            <div class="bs-icon-sm bs-icon-rounded bs-icon-secondary d-flex flex-shrink-0 justify-content-center align-items-center d-inline-block bs-icon me-2"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-school">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                                    <path d="M22 9l-10 -4l-10 4l10 4l10 -4v6"></path>
-                                    <path d="M6 10.6v5.4a6 3 0 0 0 12 0v-5.4"></path>
-                                </svg></div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" role="tab"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordion-1 .item-2" aria-expanded="false" aria-controls="accordion-1 .item-2">Lorem quam erat placerat mollis, rhoncus senectus?</button></h2>
+                            <div class="accordion-collapse collapse item-2" role="tabpanel" data-bs-parent="#accordion-1">
+                                <div class="accordion-body">
+                                    <p class="mb-0">Nullam id dolor id nibh ultricies vehicula ut id elit. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" role="tab"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordion-1 .item-3" aria-expanded="false" aria-controls="accordion-1 .item-3">Iaculis accumsan id, facilisis proin ipsum velit neque?</button></h2>
+                            <div class="accordion-collapse collapse item-3" role="tabpanel" data-bs-parent="#accordion-1">
+                                <div class="accordion-body">
+                                    <p class="mb-0">Nullam id dolor id nibh ultricies vehicula ut id elit. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus.</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -112,7 +112,7 @@ def register(request):
             user, user_error = create_user(username, password)
             if user_error:
                 messages.error(request, user_error)
-                return render(request, 'authentication/signup.html', {'form': form})
+                return render(request, 'authentication/register.html', {'form': form})
 
             login(request, user)
             messages.success(request, 'Ο λογαριασμός δημιουργήθηκε επιτυχώς!')
@@ -173,16 +173,16 @@ def login_view(request):
             return render(request, 'authentication/login.html')
 
 def features(request):
-    return render(request, 'features.html')
+    return render(request, 'authentication/features.html')
 
 def integrations(request):
-    return render(request, 'integrations.html')
+    return render(request, 'authentication/integrations.html')
 
 def pricing(request):
-    return render(request, 'pricing.html')
+    return render(request, 'authentication/pricing.html')
 
 def contacts(request):
-    return render(request, 'contacts.html')
+    return render(request, 'authentication/contacts.html')
 
 def index(request):
-    return render(request, 'index.html')
+    return render(request, '/')
