@@ -2,6 +2,22 @@
 
   pip install -r requirements.txt
 
+
+git init
+
+git add .
+git commit -m "init"
+git branch -M main
+git remote add origin https://github.com/theostamp/django.git
+git push -u origin main 
+
+git push -u origin main --force
+
+
+
+chmod +x start1.sh
+./start1.sh
+
 ## To run the server, run the following command:
 
     python manage.py makemigrations  

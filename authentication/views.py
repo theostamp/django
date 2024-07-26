@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
-from .forms import CustomUserCreationForm, CustomUserLoginForm, TenantURLForm
+from .forms import CustomUserCreationForm, CustomUserLoginForm, TenantURLForm, SubscriptionPlanForm
 from django.contrib import messages
 from django.db import IntegrityError
 from tenants.models import Tenant, Domain
@@ -45,7 +45,7 @@ def user_credits(request):
 def create_tenant(user):
     with schema_context('public'):
         if Tenant.objects.filter(schema_name=user.username).exists():
-            return None, "Υπάρχει ήδη ενοικιαστής με αυτό το όνομα."
+            return None, "Το σχήμα αυτό υπάρχει ήδη."
 
         try:
             tenant = Tenant(schema_name=user.username, name=user.username)
@@ -112,23 +112,37 @@ def register(request):
             user, user_error = create_user(username, password)
             if user_error:
                 messages.error(request, user_error)
-                return render(request, 'authentication/register.html', {'form': form})
-
-            tenant, tenant_error = create_tenant(user)
-            if tenant_error:
-                messages.error(request, tenant_error)
-                user.delete()
-                return render(request, 'authentication/register.html', {'form': form})
+                return render(request, 'authentication/signup.html', {'form': form})
 
             login(request, user)
             messages.success(request, 'Ο λογαριασμός δημιουργήθηκε επιτυχώς!')
-            return redirect('setup_url')
+            return redirect('select_subscription')
         else:
             messages.error(request, 'Σφάλμα κατά την εγγραφή. Παρακαλώ ελέγξτε το φόρμα.')
     else:
         form = CustomUserCreationForm()
 
-    return render(request, 'authentication/register.html', {'form': form})
+    return render(request, 'authentication/signup.html', {'form': form})
+
+@login_required
+def select_subscription(request):
+    if request.method == 'POST':
+        form = SubscriptionPlanForm(request.POST)
+        if form.is_valid():
+            # Προσθήκη λογικής για την επιλογή συνδρομητικού προγράμματος
+            tenant, tenant_error = create_tenant(request.user)
+            if tenant_error:
+                messages.error(request, tenant_error)
+                return render(request, 'authentication/select_subscription.html', {'form': form})
+
+            messages.success(request, 'Ο tenant δημιουργήθηκε επιτυχώς!')
+            return redirect('user_credits')
+        else:
+            messages.error(request, 'Σφάλμα κατά την επιλογή συνδρομής. Παρακαλώ ελέγξτε το φόρμα.')
+    else:
+        form = SubscriptionPlanForm()
+
+    return render(request, 'authentication/select_subscription.html', {'form': form})
 
 def login_view(request):
     logger.debug(f"Request method: {request.method}")
@@ -151,5 +165,24 @@ def login_view(request):
             logger.warning("Login failed: Invalid form data")
             return JsonResponse({'success': False, 'message': 'Μη έγκυρα στοιχεία φόρμας'}, status=400)
     else:
-        logger.error("Login failed: Invalid request method")
-        return JsonResponse({'success': False, 'message': 'Μη επιτρεπτό αίτημα'}, status=400)
+        if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
+            logger.error("Login failed: Invalid request method")
+            return JsonResponse({'success': False, 'message': 'Μη επιτρεπτό αίτημα'}, status=400)
+        else:
+            messages.error(request, 'Παρακαλώ χρησιμοποιήστε την εφαρμογή για να συνδεθείτε.')
+            return render(request, 'authentication/login.html')
+
+def features(request):
+    return render(request, 'features.html')
+
+def integrations(request):
+    return render(request, 'integrations.html')
+
+def pricing(request):
+    return render(request, 'pricing.html')
+
+def contacts(request):
+    return render(request, 'contacts.html')
+
+def index(request):
+    return render(request, 'index.html')

@@ -1,7 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import CustomUser
-from django.core.exceptions import ValidationError
 from tenants.models import Tenant, Domain
 
 class CustomUserCreationForm(UserCreationForm):
@@ -21,3 +20,11 @@ class CustomUserLoginForm(AuthenticationForm):
 
 class TenantURLForm(forms.Form):
     tenant_url = forms.CharField(label='Διεύθυνση URL του Tenant', max_length=100)
+
+class SubscriptionPlanForm(forms.Form):
+    PLAN_CHOICES = [
+        ('basic', 'Basic'),
+        ('premium', 'Premium'),
+        ('enterprise', 'Enterprise'),
+    ]
+    plan = forms.ChoiceField(choices=PLAN_CHOICES, label='Επιλογή Προγράμματος')
