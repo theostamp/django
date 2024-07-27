@@ -11,7 +11,7 @@ git reset --hard origin/main
 git init
 
 git add .
-git commit -m "update signup 4"
+git commit -m "update signup 5"
 git branch -M main
 git remote add origin https://github.com/theostamp/django.git
 git push -u origin main 
@@ -24,7 +24,8 @@ python manage.py runserver 8003
 chmod +x start1.sh
 ./start1.sh
 
-
+python manage.py collectstatic 
+python manage.py createsuperuser
 
   pip install -r requirements.txt
 

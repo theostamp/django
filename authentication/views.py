@@ -1,12 +1,9 @@
-
-# authentication/views.py
-
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
-from .forms import CustomUserCreationForm, CustomUserLoginForm, TenantURLForm, SubscriptionPlanForm
+from .forms import CustomUserCreationForm, CustomUserLoginForm, TenantURLForm, SubscriptionPlanForm, PaymentForm
 from django.contrib import messages
 from django.db import IntegrityError
-from tenants.models import Tenant, Domain
+from tenants.models import Tenant, Domain, Subscription
 from .models import CustomUser
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -17,22 +14,9 @@ from django.conf import settings
 import os
 import logging
 from django.views.decorators.csrf import ensure_csrf_cookie
-from django.core.mail import send_mail
-from django.utils import timezone
-from datetime import timedelta
-from .models import Subscription
-from django.utils import timezone
-from datetime import timedelta
 from django.utils import timezone
 from datetime import timedelta
 import stripe
-from django.conf import settings
-from .forms import CustomUserCreationForm, PaymentForm
-from .models import CustomUser, Subscription
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.contrib.auth import login, authenticate
-from django.contrib.auth.decorators import login_required
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -63,13 +47,13 @@ def user_credits(request):
     }
     return render(request, 'authentication/user_credits.html', context)
 
-def create_tenant(user):
+def create_tenant(user, plan):
     with schema_context('public'):
         if Tenant.objects.filter(schema_name=user.username).exists():
             return None, "Το σχήμα αυτό υπάρχει ήδη."
 
         try:
-            tenant = Tenant(schema_name=user.username, name=user.username)
+            tenant = Tenant(schema_name=user.username, name=user.username, subscription_type=plan)
             tenant.save()
             create_folders_for_tenant(user.username)
             domain_name = f"{user.username}.127.0.0.1:8003"
@@ -123,8 +107,6 @@ def create_user(username, password):
     user = User.objects.create_user(username=username, password=password)
     return user, None
 
-
-
 def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
@@ -138,19 +120,25 @@ def register(request):
                 messages.error(request, user_error)
                 return render(request, 'authentication/register.html', {'form': form})
 
+            tenant, tenant_error = create_tenant(user, plan)
+            if tenant_error:
+                messages.error(request, tenant_error)
+                return render(request, 'authentication/register.html', {'form': form})
+
             # Δημιουργία συνδρομής με βάση την επιλογή του χρήστη
             if plan == 'trial':
                 end_date = timezone.now() + timedelta(days=30)
+                price = 0
             else:
                 end_date = timezone.now() + timedelta(days=365)  # Παράδειγμα για ετήσια συνδρομή
+                price = 100  # Τιμή για την ετήσια συνδρομή (παράδειγμα)
 
-            # Δημιουργία της συνδρομής χωρίς να την ενεργοποιήσουμε ακόμα
-            subscription = Subscription.objects.create(
-                user=user,
-                plan=plan,
+            Subscription.objects.create(
+                tenant=tenant,
+                subscription_type=plan,
                 start_date=timezone.now(),
                 end_date=end_date,
-                active=False
+                price=price
             )
 
             login(request, user)
@@ -163,7 +151,6 @@ def register(request):
 
     return render(request, 'authentication/register.html', {'form': form})
 
-# authentication/views.py
 @login_required
 def process_payment(request):
     if request.method == 'POST':
@@ -179,7 +166,8 @@ def process_payment(request):
                     source=stripe_token,
                 )
                 # Εύρεση της συνδρομής και ενεργοποίησή της
-                subscription = Subscription.objects.get(user=request.user, active=False)
+                tenant = Tenant.objects.get(schema_name=request.user.username)
+                subscription = Subscription.objects.get(tenant=tenant)
                 subscription.active = True
                 subscription.save()
 
@@ -194,13 +182,11 @@ def process_payment(request):
 
     return render(request, 'authentication/payment.html', {'form': form, 'stripe_public_key': settings.STRIPE_PUBLIC_KEY})
 
-
 @login_required
 def select_subscription(request):
     if request.method == 'POST':
         form = SubscriptionPlanForm(request.POST)
         if form.is_valid():
-            # Προσθήκη λογικής για την επιλογή συνδρομητικού προγράμματος
             tenant, tenant_error = create_tenant(request.user)
             if tenant_error:
                 messages.error(request, tenant_error)
@@ -257,6 +243,3 @@ def contacts(request):
 
 def index(request):
     return render(request, 'authentication/ ')
-
-
-
