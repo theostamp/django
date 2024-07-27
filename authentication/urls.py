@@ -18,4 +18,5 @@ urlpatterns = [
     # Προσθήκη των URL για επαναφορά κωδικού
     path('password_reset/', include('django.contrib.auth.urls')),
     path('get-csrf-token/', views.get_csrf_token, name='get_csrf_token'),
+    path('payment/', views.process_payment, name='payment'),
 ]

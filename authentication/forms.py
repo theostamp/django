@@ -4,6 +4,8 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import CustomUser
 from tenants.models import Tenant, Domain
+from django.contrib.auth.forms import UserCreationForm
+
 
 class CustomUserCreationForm(UserCreationForm):
     PLAN_CHOICES = [
@@ -17,6 +19,7 @@ class CustomUserCreationForm(UserCreationForm):
     class Meta:
         model = CustomUser
         fields = ('username', 'email', 'password1', 'password2', 'plan')
+
 
 class CustomUserLoginForm(AuthenticationForm):
     class Meta:
@@ -38,3 +41,12 @@ class SubscriptionPlanForm(forms.Form):
         ('enterprise', 'Enterprise'),
     ]
     plan = forms.ChoiceField(choices=PLAN_CHOICES, label='Επιλογή Προγράμματος')
+
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].widget.attrs.update({'class': 'form-control'})
+        self.fields['email'].widget.attrs.update({'class': 'form-control'})
+        self.fields['password1'].widget.attrs.update({'class': 'form-control'})
+        self.fields['password2'].widget.attrs.update({'class': 'form-control'})
+        self.fields['plan'].widget.attrs.update({'class': 'form-select'})

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Πληρωμή</title>
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+    <h2>Πληρωμή</h2>
+    <form method="post" id="payment-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" id="submit-button">Πληρωμή</button>
+    </form>
+
+    <script>
+        const stripe = Stripe('{{ stripe_public_key }}');
+        const elements = stripe.elements();
+        const card = elements.create('card');
+        card.mount('#card-element');
+
+        const form = document.getElementById('payment-form');
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const {token, error} = await stripe.createToken(card);
+            if (error) {
+                console.error(error);
+            } else {
+                const hiddenInput = document.createElement('input');
+                hiddenInput.setAttribute('type', 'hidden');
+                hiddenInput.setAttribute('name', 'stripeToken');
+                hiddenInput.setAttribute('value', token.id);
+                form.appendChild(hiddenInput);
+                form.submit();
+            }
+        });
+    </script>
+</body>
+</html>

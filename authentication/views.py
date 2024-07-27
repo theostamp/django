@@ -23,7 +23,18 @@ from datetime import timedelta
 from .models import Subscription
 from django.utils import timezone
 from datetime import timedelta
+from django.utils import timezone
+from datetime import timedelta
+import stripe
+from django.conf import settings
+from .forms import CustomUserCreationForm, PaymentForm
+from .models import CustomUser, Subscription
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.decorators import login_required
 
+stripe.api_key = settings.STRIPE_SECRET_KEY
 
 logger = logging.getLogger('django')
 
@@ -114,8 +125,6 @@ def create_user(username, password):
 
 
 
-
-
 def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
@@ -135,23 +144,55 @@ def register(request):
             else:
                 end_date = timezone.now() + timedelta(days=365)  # Παράδειγμα για ετήσια συνδρομή
 
-            Subscription.objects.create(
+            # Δημιουργία της συνδρομής χωρίς να την ενεργοποιήσουμε ακόμα
+            subscription = Subscription.objects.create(
                 user=user,
                 plan=plan,
                 start_date=timezone.now(),
                 end_date=end_date,
-                active=True
+                active=False
             )
 
             login(request, user)
-            messages.success(request, 'Ο λογαριασμός δημιουργήθηκε επιτυχώς! Η συνδρομή σας έχει ενεργοποιηθεί.')
-            return redirect('index')
+            messages.success(request, 'Ο λογαριασμός δημιουργήθηκε επιτυχώς! Παρακαλώ ολοκληρώστε την πληρωμή σας.')
+            return redirect('payment')
         else:
             messages.error(request, 'Σφάλμα κατά την εγγραφή. Παρακαλώ ελέγξτε το φόρμα.')
     else:
         form = CustomUserCreationForm()
 
     return render(request, 'authentication/register.html', {'form': form})
+
+# authentication/views.py
+@login_required
+def process_payment(request):
+    if request.method == 'POST':
+        form = PaymentForm(request.POST)
+        if form.is_valid():
+            stripe_token = form.cleaned_data['stripeToken']
+
+            try:
+                charge = stripe.Charge.create(
+                    amount=5000,  # Το ποσό σε cents (π.χ. $50.00)
+                    currency='usd',
+                    description='Example charge',
+                    source=stripe_token,
+                )
+                # Εύρεση της συνδρομής και ενεργοποίησή της
+                subscription = Subscription.objects.get(user=request.user, active=False)
+                subscription.active = True
+                subscription.save()
+
+                messages.success(request, 'Η πληρωμή σας ολοκληρώθηκε με επιτυχία!')
+                return redirect('index')
+            except stripe.error.CardError as e:
+                messages.error(request, f'Η πληρωμή απέτυχε: {e.error.message}')
+        else:
+            messages.error(request, 'Παρακαλώ δοκιμάστε ξανά.')
+    else:
+        form = PaymentForm()
+
+    return render(request, 'authentication/payment.html', {'form': form, 'stripe_public_key': settings.STRIPE_PUBLIC_KEY})
 
 
 @login_required
