@@ -43,6 +43,11 @@ class SubscriptionPlanForm(forms.Form):
     plan = forms.ChoiceField(choices=PLAN_CHOICES, label='Επιλογή Προγράμματος')
 
 
+
+class PaymentForm(forms.Form):
+    stripeToken = forms.CharField(widget=forms.HiddenInput())
+
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['username'].widget.attrs.update({'class': 'form-control'})
