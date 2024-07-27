@@ -6,9 +6,17 @@ from .models import CustomUser
 from tenants.models import Tenant, Domain
 
 class CustomUserCreationForm(UserCreationForm):
+    PLAN_CHOICES = [
+        ('trial', 'One Month Trial'),
+        ('basic', 'Basic'),
+        ('premium', 'Premium'),
+        ('enterprise', 'Enterprise'),
+    ]
+    plan = forms.ChoiceField(choices=PLAN_CHOICES, label='Επιλογή Συνδρομής')
+
     class Meta:
         model = CustomUser
-        fields = ('username', 'email', 'password1', 'password2')
+        fields = ('username', 'email', 'password1', 'password2', 'plan')
 
 class CustomUserLoginForm(AuthenticationForm):
     class Meta:

@@ -21,7 +21,8 @@ from django.core.mail import send_mail
 from django.utils import timezone
 from datetime import timedelta
 from .models import Subscription
-
+from django.utils import timezone
+from datetime import timedelta
 
 
 logger = logging.getLogger('django')
@@ -114,36 +115,43 @@ def create_user(username, password):
 
 
 
+
 def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password1')
+            plan = form.cleaned_data.get('plan')
 
             user, user_error = create_user(username, password)
             if user_error:
                 messages.error(request, user_error)
                 return render(request, 'authentication/register.html', {'form': form})
 
-            # Δημιουργία συνδρομής με δοκιμαστική περίοδο ενός μήνα
+            # Δημιουργία συνδρομής με βάση την επιλογή του χρήστη
+            if plan == 'trial':
+                end_date = timezone.now() + timedelta(days=30)
+            else:
+                end_date = timezone.now() + timedelta(days=365)  # Παράδειγμα για ετήσια συνδρομή
+
             Subscription.objects.create(
                 user=user,
-                plan='trial',
-                end_date=timezone.now() + timedelta(days=30)
+                plan=plan,
+                start_date=timezone.now(),
+                end_date=end_date,
+                active=True
             )
 
             login(request, user)
-            messages.success(request, 'Ο λογαριασμός δημιουργήθηκε επιτυχώς! Η δοκιμαστική σας περίοδος έχει ξεκινήσει.')
-            return redirect('select_subscription')
+            messages.success(request, 'Ο λογαριασμός δημιουργήθηκε επιτυχώς! Η συνδρομή σας έχει ενεργοποιηθεί.')
+            return redirect('index')
         else:
             messages.error(request, 'Σφάλμα κατά την εγγραφή. Παρακαλώ ελέγξτε το φόρμα.')
     else:
         form = CustomUserCreationForm()
 
     return render(request, 'authentication/register.html', {'form': form})
-
-
 
 
 @login_required
