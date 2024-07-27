@@ -1,3 +1,6 @@
+
+# authentication/views.py
+
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
 from .forms import CustomUserCreationForm, CustomUserLoginForm, TenantURLForm, SubscriptionPlanForm
@@ -14,6 +17,12 @@ from django.conf import settings
 import os
 import logging
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.core.mail import send_mail
+from django.utils import timezone
+from datetime import timedelta
+from .models import Subscription
+
+
 
 logger = logging.getLogger('django')
 
@@ -102,6 +111,9 @@ def create_user(username, password):
     user = User.objects.create_user(username=username, password=password)
     return user, None
 
+
+
+
 def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
@@ -114,8 +126,15 @@ def register(request):
                 messages.error(request, user_error)
                 return render(request, 'authentication/register.html', {'form': form})
 
+            # Δημιουργία συνδρομής με δοκιμαστική περίοδο ενός μήνα
+            Subscription.objects.create(
+                user=user,
+                plan='trial',
+                end_date=timezone.now() + timedelta(days=30)
+            )
+
             login(request, user)
-            messages.success(request, 'Ο λογαριασμός δημιουργήθηκε επιτυχώς!')
+            messages.success(request, 'Ο λογαριασμός δημιουργήθηκε επιτυχώς! Η δοκιμαστική σας περίοδος έχει ξεκινήσει.')
             return redirect('select_subscription')
         else:
             messages.error(request, 'Σφάλμα κατά την εγγραφή. Παρακαλώ ελέγξτε το φόρμα.')
@@ -123,6 +142,9 @@ def register(request):
         form = CustomUserCreationForm()
 
     return render(request, 'authentication/register.html', {'form': form})
+
+
+
 
 @login_required
 def select_subscription(request):
@@ -186,3 +208,6 @@ def contacts(request):
 
 def index(request):
     return render(request, 'authentication/ ')
+
+
+

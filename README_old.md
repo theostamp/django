@@ -6,7 +6,7 @@
 git init
 
 git add .
-git commit -m "acoounts"
+git commit -m "update signup"
 git branch -M main
 git remote add origin https://github.com/theostamp/django.git
 git push -u origin main 

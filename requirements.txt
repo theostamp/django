@@ -14,5 +14,5 @@ channels
 requests
 django-tenants
 beautifulsoup4
-
+celery
 
