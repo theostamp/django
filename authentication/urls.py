@@ -14,8 +14,6 @@ urlpatterns = [
     path('integrations/', views.integrations, name='integrations'),
     path('pricing/', views.pricing, name='pricing'),
     path('contacts/', views.contacts, name='contacts'),
-    # path('', views.index, name='index'),
-    # Προσθήκη των URL για επαναφορά κωδικού
     path('password_reset/', include('django.contrib.auth.urls')),
     path('get-csrf-token/', views.get_csrf_token, name='get_csrf_token'),
     path('payment/', views.process_payment, name='payment'),
