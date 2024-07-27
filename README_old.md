@@ -1,6 +1,11 @@
 
 
-  pip install -r requirements.txt
+##  LOCAL ONLY ####
+git fetch origin
+git reset --hard origin/main
+##
+
+
 
 
 git init
@@ -21,7 +26,7 @@ chmod +x start1.sh
 
 
 
-
+  pip install -r requirements.txt
 
 ## To run the server, run the following command:
 
