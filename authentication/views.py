@@ -1,3 +1,4 @@
+# authentication/views.py
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
 from .forms import CustomUserCreationForm, CustomUserLoginForm, TenantURLForm, SubscriptionPlanForm, PaymentForm
@@ -187,7 +188,7 @@ def select_subscription(request):
     if request.method == 'POST':
         form = SubscriptionPlanForm(request.POST)
         if form.is_valid():
-            tenant, tenant_error = create_tenant(request.user)
+            tenant, tenant_error = create_tenant(request.user, form.cleaned_data.get('plan'))
             if tenant_error:
                 messages.error(request, tenant_error)
                 return render(request, 'authentication/select_subscription.html', {'form': form})
