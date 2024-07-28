@@ -1,5 +1,4 @@
 # authentication/views.py
-
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
 from .forms import CustomUserCreationForm, CustomUserLoginForm, TenantURLForm, SubscriptionPlanForm, PaymentForm
@@ -189,7 +188,7 @@ def select_subscription(request):
     if request.method == 'POST':
         form = SubscriptionPlanForm(request.POST)
         if form.is_valid():
-            tenant, tenant_error = create_tenant(request.user, form.cleaned_data.get('plan'))
+            tenant, tenant_error = create_tenant(request.user, form.cleaned_data['plan'])
             if tenant_error:
                 messages.error(request, tenant_error)
                 return render(request, 'authentication/select_subscription.html', {'form': form})
@@ -202,8 +201,6 @@ def select_subscription(request):
         form = SubscriptionPlanForm()
 
     return render(request, 'authentication/select_subscription.html', {'form': form})
-
-
 
 def login_view(request):
     logger.debug(f"Request method: {request.method}")
@@ -230,24 +227,26 @@ def login_view(request):
 
     return render(request, 'authentication/login.html', {'form': form})
 
-
-
-
 @login_required
 def profile_view(request):
     current_user = request.user
+    tenant = None
+    subscription = None
+
     try:
         tenant = Tenant.objects.get(schema_name=current_user.username)
         subscription = Subscription.objects.get(tenant=tenant)
-    except (Tenant.DoesNotExist, Subscription.DoesNotExist):
-        tenant = None
-        subscription = None
+    except Tenant.DoesNotExist:
+        pass
+    except Subscription.DoesNotExist:
+        pass
 
     context = {
         'current_user': current_user,
         'tenant': tenant,
         'subscription': subscription,
     }
+
     return render(request, 'authentication/profile.html', context)
 
 def features(request):
