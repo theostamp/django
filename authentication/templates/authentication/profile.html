@@ -2,24 +2,32 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Προφίλ Χρήστη</h1>
-<p>Όνομα χρήστη: {{ current_user.username }}</p>
-<p>Email: {{ current_user.email }}</p>
+<h2>Προφίλ Χρήστη</h2>
+<p><strong>Όνομα χρήστη:</strong> {{ current_user.username }}</p>
+<p><strong>Email:</strong> {{ current_user.email }}</p>
+
+<h3>Στοιχεία Tenant</h3>
 {% if tenant %}
-<h2>Στοιχεία Tenant</h2>
-<p>Όνομα: {{ tenant.name }}</p>
-<p>Ημερομηνία δημιουργίας: {{ tenant.created_on }}</p>
+    <p><strong>Όνομα:</strong> {{ tenant.name }}</p>
+    <p><strong>Ημερομηνία δημιουργίας:</strong> {{ tenant.created_on }}</p>
+{% else %}
+    <p>Δεν βρέθηκαν στοιχεία tenant.</p>
 {% endif %}
+
+<h3>Στοιχεία Συνδρομής</h3>
 {% if subscription %}
-<h2>Στοιχεία Συνδρομής</h2>
-<p>Τύπος Συνδρομής: {{ subscription.get_subscription_type_display }}</p>
-<p>Ημερομηνία Έναρξης: {{ subscription.start_date }}</p>
-<p>Ημερομηνία Λήξης: {{ subscription.end_date }}</p>
-<p>Τιμή: {{ subscription.price }}</p>
-<p>Ενεργή: {{ subscription.active }}</p>
+    <p><strong>Τύπος Συνδρομής:</strong> {{ subscription.subscription_type }}</p>
+    <p><strong>Ημερομηνία Έναρξης:</strong> {{ subscription.start_date }}</p>
+    <p><strong>Ημερομηνία Λήξης:</strong> {{ subscription.end_date }}</p>
+    <p><strong>Τιμή:</strong> {{ subscription.price }}</p>
+    <p><strong>Ενεργή:</strong> {{ subscription.active }}</p>
+{% else %}
+    <p>Δεν βρέθηκαν στοιχεία συνδρομής.</p>
 {% endif %}
-<p><a href="{% url 'password_change' %}">Αλλαγή Κωδικού Πρόσβασης</a></p>
+
+<a href="{% url 'password_change' %}" class="btn btn-primary">Αλλαγή Κωδικού Πρόσβασης</a>
 {% endblock %}
+
 
 <style>body {
     font-family: Tahoma, sans-serif;

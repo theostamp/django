@@ -12,24 +12,16 @@ from django.contrib.auth import get_user_model
 from django_tenants.utils import schema_context
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
+from django.urls import reverse_lazy
 import os
 import logging
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils import timezone
 from datetime import timedelta
 import stripe
+from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
-from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
-from django.urls import reverse_lazy
-
-class CustomPasswordChangeView(PasswordChangeView):
-    template_name = 'authentication/password_change.html'
-    success_url = reverse_lazy('password_change_done')
-
-class CustomPasswordChangeDoneView(PasswordChangeDoneView):
-    template_name = 'authentication/password_change_done.html'
-
 
 logger = logging.getLogger('django')
 
@@ -259,6 +251,13 @@ def profile_view(request):
 
     return render(request, 'authentication/profile.html', context)
 
+class CustomPasswordChangeView(PasswordChangeView):
+    template_name = 'authentication/password_change.html'
+    success_url = reverse_lazy('password_change_done')
+
+class CustomPasswordChangeDoneView(PasswordChangeDoneView):
+    template_name = 'authentication/password_change_done.html'
+
 def features(request):
     return render(request, 'authentication/features.html')
 
@@ -273,5 +272,3 @@ def contacts(request):
 
 def index(request):
     return render(request, 'authentication/index.html')
-
-
