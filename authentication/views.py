@@ -216,20 +216,34 @@ def login_view(request):
             if user is not None:
                 login(request, user)
                 logger.debug("Login successful")
-                return JsonResponse({'success': True, 'message': 'Επιτυχής σύνδεση'})
+                return redirect('profile')  # Ανακατευθύνει στην προσωπική σελίδα πληροφοριών του χρήστη
             else:
                 logger.warning("Login failed: Invalid username or password")
-                return JsonResponse({'success': False, 'message': 'Λάθος όνομα χρήστη ή κωδικός'}, status=401)
+                messages.error(request, 'Λάθος όνομα χρήστη ή κωδικός')
         else:
             logger.warning("Login failed: Invalid form data")
-            return JsonResponse({'success': False, 'message': 'Μη έγκυρα στοιχεία φόρμας'}, status=400)
+            messages.error(request, 'Μη έγκυρα στοιχεία φόρμας')
     else:
-        if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
-            logger.error("Login failed: Invalid request method")
-            return JsonResponse({'success': False, 'message': 'Μη επιτρεπτό αίτημα'}, status=400)
-        else:
-            messages.error(request, 'Παρακαλώ χρησιμοποιήστε την εφαρμογή για να συνδεθείτε.')
-            return render(request, 'authentication/login.html')
+        form = CustomUserLoginForm()
+
+    return render(request, 'authentication/login.html', {'form': form})
+
+@login_required
+def profile_view(request):
+    current_user = request.user
+    try:
+        tenant = Tenant.objects.get(schema_name=current_user.username)
+        subscription = Subscription.objects.get(tenant=tenant)
+    except (Tenant.DoesNotExist, Subscription.DoesNotExist):
+        tenant = None
+        subscription = None
+
+    context = {
+        'current_user': current_user,
+        'tenant': tenant,
+        'subscription': subscription,
+    }
+    return render(request, 'authentication/profile.html', context)
 
 def features(request):
     return render(request, 'authentication/features.html')
@@ -244,4 +258,4 @@ def contacts(request):
     return render(request, 'authentication/contacts.html')
 
 def index(request):
-    return render(request, 'authentication/ ')
+    return render(request, 'authentication/index.html')
