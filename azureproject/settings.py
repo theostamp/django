@@ -26,8 +26,11 @@ MEDIA_URL = '/media/'
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-# settings.py
-LOGIN_REDIRECT_URL = '/profile/'
+
+
+LOGIN_REDIRECT_URL = '/authentication/profile/'
+
+
 
 
 

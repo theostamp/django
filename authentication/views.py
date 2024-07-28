@@ -20,6 +20,16 @@ from datetime import timedelta
 import stripe
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
+from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
+from django.urls import reverse_lazy
+
+class CustomPasswordChangeView(PasswordChangeView):
+    template_name = 'authentication/password_change.html'
+    success_url = reverse_lazy('password_change_done')
+
+class CustomPasswordChangeDoneView(PasswordChangeDoneView):
+    template_name = 'authentication/password_change_done.html'
+
 
 logger = logging.getLogger('django')
 
@@ -263,3 +273,5 @@ def contacts(request):
 
 def index(request):
     return render(request, 'authentication/index.html')
+
+
