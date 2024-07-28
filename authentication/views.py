@@ -203,6 +203,8 @@ def select_subscription(request):
 
     return render(request, 'authentication/select_subscription.html', {'form': form})
 
+
+
 def login_view(request):
     logger.debug(f"Request method: {request.method}")
     if request.method == 'POST':
@@ -216,7 +218,7 @@ def login_view(request):
             if user is not None:
                 login(request, user)
                 logger.debug("Login successful")
-                return redirect('profile')  # Ανακατευθύνει στην προσωπική σελίδα πληροφοριών του χρήστη
+                return redirect('profile')  # Ανακατεύθυνση στην προσωπική σελίδα του χρήστη
             else:
                 logger.warning("Login failed: Invalid username or password")
                 messages.error(request, 'Λάθος όνομα χρήστη ή κωδικός')
@@ -227,6 +229,9 @@ def login_view(request):
         form = CustomUserLoginForm()
 
     return render(request, 'authentication/login.html', {'form': form})
+
+
+
 
 @login_required
 def profile_view(request):
