@@ -1,26 +1,98 @@
 <!-- authentication/profile.html -->
+{% extends "base.html" %}
 
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Προφίλ Χρήστη</title>
-</head>
-<body>
-    <h1>Προφίλ Χρήστη</h1>
-    <p>Όνομα χρήστη: {{ current_user.username }}</p>
-    <p>Email: {{ current_user.email }}</p>
-    {% if tenant %}
-    <h2>Στοιχεία Tenant</h2>
-    <p>Όνομα: {{ tenant.name }}</p>
-    <p>Ημερομηνία δημιουργίας: {{ tenant.created_on }}</p>
-    {% endif %}
-    {% if subscription %}
-    <h2>Στοιχεία Συνδρομής</h2>
-    <p>Τύπος Συνδρομής: {{ subscription.get_subscription_type_display }}</p>
-    <p>Ημερομηνία Έναρξης: {{ subscription.start_date }}</p>
-    <p>Ημερομηνία Λήξης: {{ subscription.end_date }}</p>
-    <p>Τιμή: {{ subscription.price }}</p>
-    <p>Ενεργή: {{ subscription.active }}</p>
-    {% endif %}
-</body>
-</html>
+{% block content %}
+<h1>Προφίλ Χρήστη</h1>
+<p>Όνομα χρήστη: {{ current_user.username }}</p>
+<p>Email: {{ current_user.email }}</p>
+{% if tenant %}
+<h2>Στοιχεία Tenant</h2>
+<p>Όνομα: {{ tenant.name }}</p>
+<p>Ημερομηνία δημιουργίας: {{ tenant.created_on }}</p>
+{% endif %}
+{% if subscription %}
+<h2>Στοιχεία Συνδρομής</h2>
+<p>Τύπος Συνδρομής: {{ subscription.get_subscription_type_display }}</p>
+<p>Ημερομηνία Έναρξης: {{ subscription.start_date }}</p>
+<p>Ημερομηνία Λήξης: {{ subscription.end_date }}</p>
+<p>Τιμή: {{ subscription.price }}</p>
+<p>Ενεργή: {{ subscription.active }}</p>
+{% endif %}
+<p><a href="{% url 'password_change' %}">Αλλαγή Κωδικού Πρόσβασης</a></p>
+{% endblock %}
+
+<style>body {
+    font-family: Tahoma, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.content {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+form {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+}
+
+input, button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    box-sizing: border-box;
+}
+
+button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+}
+
+button:hover {
+    background-color: #0056b3;
+    cursor: pointer;
+}
+
+footer {
+    background-color: #f8f9fa;
+    padding: 20px 0;
+}
+
+footer p, footer ul {
+    margin: 0;
+}
+
+footer ul {
+    padding-left: 0;
+    list-style: none;
+}
+
+footer ul li {
+    display: inline;
+    margin-right: 15px;
+}
+
+footer ul li a {
+    color: #6c757d;
+    text-decoration: none;
+}
+
+footer ul li a:hover {
+    text-decoration: underline;
+}
+</style>
