@@ -3,11 +3,11 @@
     "product_description": "\u03a3\u0391\u03a1\u0394\u0395\u039b\u0395\u03a3 \u03a3\u03a4\u039f\u039d \u03a0\u0391\u0393\u039f",
     "quantity": "1",
     "total_cost": 15.0,
-    "waiter": null,
+    "waiter": "unknown",
     "order_done": false,
     "printed": false,
-    "order_id": "610073",
-    "timestamp": "2024-07-27 06:10:07",
-    "time_diff": 3,
-    "time_passed": 3
+    "order_id": "2210414",
+    "timestamp": "2024-07-27 22:10:41",
+    "time_diff": 34,
+    "time_passed": 34
 }

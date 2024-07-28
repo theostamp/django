@@ -1,0 +1,158 @@
+{
+    "products": [
+        {
+            "id": 1,
+            "category": "ΚΥΡΙΩΣ ",
+            "description": "ΤΡΑΧΑΝΑΣ",
+            "price": 15.0,
+            "amount": 1
+        },
+        {
+            "id": 2,
+            "category": "ΚΥΡΙΩΣ ",
+            "description": "ΠΟΥΡΕΣ ΜΕ ΣΤΑΦΥΛΙΑ",
+            "price": 3.0,
+            "amount": 1
+        },
+        {
+            "id": 3,
+            "category": "ΚΥΡΙΩΣ ",
+            "description": "ΠΟΥΡΕΣ ΜΕ ΣΤΑΦΥΛΙΑ ΚΑΙ ΜΑΝΓΟ",
+            "price": 3.0,
+            "amount": 1
+        },
+        {
+            "id": 4,
+            "category": "ΚΥΡΙΩΣ ",
+            "description": "ΑΜΠΕΛΟΦΑΣΟΥΛΑ ",
+            "price": 200.0,
+            "amount": 1
+        },
+        {
+            "id": 5,
+            "category": "ΚΥΡΙΩΣ ",
+            "description": "ΣΑΡΔΕΛΕΣ ΣΤΟΝ ΠΑΓΟ",
+            "price": 15.0,
+            "amount": 1
+        },
+        {
+            "id": 6,
+            "category": "ΚΥΡΙΩΣ ",
+            "description": "ΜΑΚΑΡΟΝΙΑ ΜΠΛΕ",
+            "price": 15.0,
+            "amount": 1
+        },
+        {
+            "id": 7,
+            "category": "ΠΟΤΑ",
+            "description": "fanta",
+            "price": 3.0,
+            "amount": 1
+        },
+        {
+            "id": 8,
+            "category": "ΠΟΤΑ",
+            "description": "ΚΡΑΣΑ ΚΟΚΚΙΝΑ",
+            "price": 3.0,
+            "amount": 1
+        },
+        {
+            "id": 9,
+            "category": "ΠΟΤΑ",
+            "description": "ΚΡΑΣΑ ΠΡΑΣΙΝΑ",
+            "price": 3.0,
+            "amount": 1
+        },
+        {
+            "id": 10,
+            "category": "ΠΟΤΑ",
+            "description": "ΚΡΑΣΑ ΑΣΠΡΑ",
+            "price": 3.0,
+            "amount": 1
+        },
+        {
+            "id": 11,
+            "category": "ΟΡΕΚΤΙΚΑ",
+            "description": "ΤΖΑΤΖΙΚΙΑ",
+            "price": 3.0,
+            "amount": 1
+        },
+        {
+            "id": 12,
+            "category": "ΟΡΕΚΤΙΚΑ",
+            "description": "ΠΑΤΑΤΟ ΝΤΟΜΑΤΟΚΕΦΤΕΔΕΣ",
+            "price": 3.0,
+            "amount": 1
+        },
+        {
+            "id": 13,
+            "category": "ΟΡΕΚΤΙΚΑ",
+            "description": "ΝΤΟΜΑΤΟΣΑΛΑΤΑ",
+            "price": 3.0,
+            "amount": 1
+        },
+        {
+            "id": 14,
+            "category": "ΟΡΕΚΤΙΚΑ",
+            "description": "ΝΤΟΜΑΤΟΣΑΛΑΤΑ ΜΕ ΤΙΠΟΤΑ",
+            "price": 3.0,
+            "amount": 1
+        },
+        {
+            "id": 16,
+            "category": "ΚΥΡΙΩΣ ",
+            "description": "ΜΑΚΑΡΟΝΙΑ ροζ",
+            "price": 15.0,
+            "amount": 1
+        },
+        {
+            "id": 18,
+            "category": "ΚΥΡΙΩΣ",
+            "description": "ΛΕΜΟΜΟΚΟΥΠΕΣ",
+            "price": 200.0,
+            "amount": 1
+        },
+        {
+            "id": 20,
+            "category": " ΚΥΡΙΩΣ",
+            "description": "ΠΑΣΑΤΕΜΠΟΣ",
+            "price": 345.0,
+            "amount": 1
+        },
+        {
+            "id": 21,
+            "category": "ΟΡΕΚΤΙΚΑ",
+            "description": "ΑΥΓΑ ",
+            "price": 200.0,
+            "amount": 1
+        },
+        {
+            "id": 23,
+            "category": "ΚΥΡΙΩΣ ",
+            "description": "ΠΟΥΡΕΣ",
+            "price": 3.0,
+            "amount": 1
+        },
+        {
+            "id": 24,
+            "category": "ΚΥΡΙΩΣ ",
+            "description": "ΑΜΥΓΔΑΛΑ",
+            "price": 323.0,
+            "amount": 1
+        },
+        {
+            "id": 25,
+            "category": "ΚΥΡΙΩΣ ",
+            "description": "ΜΙΛΚΟ",
+            "price": 15.0,
+            "amount": 1
+        },
+        {
+            "id": 26,
+            "category": "ΚΥΡΙΩΣ ",
+            "description": "ΣΑΡΔΕΛΕΣ ΣΤΟΝ ΠΑΓΟ με ΜΠΡΟΚΟΛΟ",
+            "price": 15.0,
+            "amount": 1
+        }
+    ]
+}
