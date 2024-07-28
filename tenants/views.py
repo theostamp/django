@@ -1,10 +1,36 @@
+
+# tenants/views.py
 from django.shortcuts import render, redirect
 # from .forms import RegistrationForm
 from .models import Tenant  # Υποθέτοντας ότι το μοντέλο του tenant είναι Tenant
 from django.shortcuts import render, redirect
 from .forms import SubscriptionForm
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from tenants.models import Tenant, Subscription
 
+@login_required
+def profile_view(request):
+    current_user = request.user
+    tenant = None
+    subscription = None
+
+    try:
+        tenant = Tenant.objects.get(schema_name=current_user.username)
+        subscription = Subscription.objects.get(tenant=tenant)
+    except Tenant.DoesNotExist:
+        pass
+    except Subscription.DoesNotExist:
+        pass
+
+    context = {
+        'current_user': current_user,
+        'tenant': tenant,
+        'subscription': subscription,
+    }
+
+    return render(request, 'tenants/profile.html', context)
 
 from django_tenants.middleware.main import TenantMainMiddleware
 
@@ -27,27 +53,3 @@ def add_subscription(request):
     return render(request, 'tenants/add_subscription.html', {'form': form})
 
 
-
-# def register(request):
-#     if request.method == 'POST':
-#         form = RegistrationForm(request.POST)
-#         if form.is_valid():
-#             # Δημιουργία του χρήστη
-#             user = form.save()
-            
-#             # Δημιουργία του tenant
-#             tenant = Tenant(name=form.cleaned_data['username'], owner=user)
-#             # Προσθέστε εδώ άλλες ρυθμίσεις για τον tenant αν χρειάζεται
-#             tenant.save()
-
-#             # Ανακατεύθυνση σε μια σελίδα επιτυχίας μετά την εγγραφή
-#             return redirect('success_url')  # Αντικαταστήστε με την επιθυμητή διεύθυνση
-
-#     else:
-#         form = RegistrationForm()
-
-#     return render(request, 'registration/register.html', {'form': form})
-
-@login_required
-def profile_view(request):
-    return render(request, 'tenants/profile.html')

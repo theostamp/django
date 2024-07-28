@@ -1,0 +1,25 @@
+<!-- tenants/profile.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Προφίλ Χρήστη</title>
+</head>
+<body>
+    <h1>Προφίλ Χρήστη</h1>
+    <p>Όνομα χρήστη: {{ current_user.username }}</p>
+    <p>Email: {{ current_user.email }}</p>
+    {% if tenant %}
+    <h2>Στοιχεία Tenant</h2>
+    <p>Όνομα: {{ tenant.name }}</p>
+    <p>Ημερομηνία δημιουργίας: {{ tenant.created_on }}</p>
+    {% endif %}
+    {% if subscription %}
+    <h2>Στοιχεία Συνδρομής</h2>
+    <p>Τύπος Συνδρομής: {{ subscription.get_subscription_type_display }}</p>
+    <p>Ημερομηνία Έναρξης: {{ subscription.start_date }}</p>
+    <p>Ημερομηνία Λήξης: {{ subscription.end_date }}</p>
+    <p>Τιμή: {{ subscription.price }}</p>
+    <p>Ενεργή: {{ subscription.active }}</p>
+    {% endif %}
+</body>
+</html>
