@@ -1,40 +1,29 @@
-<!DOCTYPE html>
-<html lang="el">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Πληρωμή</title>
-    <script src="https://js.stripe.com/v3/"></script>
-</head>
-<body>
-    <h2>Πληρωμή</h2>
-    <form method="post" id="payment-form">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" id="submit-button">Πληρωμή</button>
-    </form>
+{% extends 'base.html' %}
 
-    <script>
-        const stripe = Stripe('{{ stripe_public_key }}');
-        const elements = stripe.elements();
-        const card = elements.create('card');
-        card.mount('#card-element');
+{% block title %}Payment{% endblock %}
 
-        const form = document.getElementById('payment-form');
-        form.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const {token, error} = await stripe.createToken(card);
-            if (error) {
-                console.error(error);
-            } else {
-                const hiddenInput = document.createElement('input');
-                hiddenInput.setAttribute('type', 'hidden');
-                hiddenInput.setAttribute('name', 'stripeToken');
-                hiddenInput.setAttribute('value', token.id);
-                form.appendChild(hiddenInput);
-                form.submit();
-            }
-        });
-    </script>
-</body>
-</html>
+{% block content %}
+<div class="container py-4 py-md-5 my-5">
+    <div class="row">
+        <div class="col-md-6 text-center">
+            <img class="img-fluid w-100" src="{% static 'img/illustrations/payment.svg' %}">
+        </div>
+        <div class="col-md-6 text-center text-md-start">
+            <h2 class="display-6 fw-bold mb-5">
+                <span class="underline pb-1"><strong>Ολοκλήρωση Πληρωμής</strong></span>
+            </h2>
+            <form method="post" action="{% url 'payment' %}">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button class="btn btn-primary shadow" type="submit">Πληρωμή</button>
+            </form>
+            <p class="mt-3">Ή χρησιμοποιήστε το παρακάτω κουμπί Stripe για πληρωμή:</p>
+            <script async src="https://js.stripe.com/v3/buy-button.js"></script>
+            <stripe-buy-button
+              buy-button-id="buy_btn_1PhUct09cwMpk380v7jglEL0"
+              publishable-key="pk_test_51PMuwq09cwMpk380mLqEO8TRFmPxWbdkH6duCukc2IjEqUdnSCbAVM7EPnrxv7z7gXJOSGfotTkiQseG3tTmSI3t00uOMDJCfL">
+            </stripe-buy-button>
+        </div>
+    </div>
+</div>
+{% endblock %}
