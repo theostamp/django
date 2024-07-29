@@ -1,4 +1,5 @@
 # authentication/views.py
+
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
 from .forms import CustomUserCreationForm, CustomUserLoginForm, TenantURLForm, SubscriptionPlanForm, PaymentForm
@@ -12,14 +13,12 @@ from django.contrib.auth import get_user_model
 from django_tenants.utils import schema_context
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
-from django.urls import reverse_lazy
 import os
 import logging
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils import timezone
 from datetime import timedelta
 import stripe
-from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -141,7 +140,8 @@ def register(request):
                 subscription_type=plan,
                 start_date=timezone.now(),
                 end_date=end_date,
-                price=price
+                price=price,
+                active=False
             )
 
             login(request, user)
@@ -175,7 +175,7 @@ def process_payment(request):
                 subscription.save()
 
                 messages.success(request, 'Η πληρωμή σας ολοκληρώθηκε με επιτυχία!')
-                return redirect('index')
+                return redirect('payment_success')  # Ανακατεύθυνση στη σελίδα επιτυχούς πληρωμής
             except stripe.error.CardError as e:
                 messages.error(request, f'Η πληρωμή απέτυχε: {e.error.message}')
         else:
@@ -184,6 +184,10 @@ def process_payment(request):
         form = PaymentForm()
 
     return render(request, 'authentication/payment.html', {'form': form, 'stripe_public_key': settings.STRIPE_PUBLIC_KEY})
+
+@login_required
+def payment_success(request):
+    return render(request, 'authentication/payment_success.html')
 
 @login_required
 def select_subscription(request):
@@ -250,13 +254,6 @@ def profile_view(request):
     }
 
     return render(request, 'authentication/profile.html', context)
-
-class CustomPasswordChangeView(PasswordChangeView):
-    template_name = 'authentication/password_change.html'
-    success_url = reverse_lazy('password_change_done')
-
-class CustomPasswordChangeDoneView(PasswordChangeDoneView):
-    template_name = 'authentication/password_change_done.html'
 
 def features(request):
     return render(request, 'authentication/features.html')
