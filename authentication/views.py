@@ -19,8 +19,41 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils import timezone
 from datetime import timedelta
 import stripe
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
+import stripe
 
+# Βεβαιωθείτε ότι η μυστική κλείδα της Stripe έχει οριστεί σωστά
 stripe.api_key = settings.STRIPE_SECRET_KEY
+
+@csrf_exempt
+def stripe_webhook(request):
+    payload = request.body
+    sig_header = request.META['HTTP_STRIPE_SIGNATURE']
+    endpoint_secret = settings.STRIPE_ENDPOINT_SECRET  # Ορίστε το στο settings.py
+
+    event = None
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, endpoint_secret
+        )
+    except ValueError as e:
+        # Invalid payload
+        return JsonResponse({'status': 'invalid payload'}, status=400)
+    except stripe.error.SignatureVerificationError as e:
+        # Invalid signature
+        return JsonResponse({'status': 'invalid signature'}, status=400)
+
+    # Handle the event
+    if event['type'] == 'payment_intent.succeeded':
+        payment_intent = event['data']['object']
+        # Process the payment intent (προσθέστε τη λογική σας εδώ)
+    else:
+        print('Unhandled event type {}'.format(event['type']))
+
+    return JsonResponse({'status': 'success'}, status=200)
 
 logger = logging.getLogger('django')
 
