@@ -142,6 +142,9 @@ def create_user(username, password):
     user = User.objects.create_user(username=username, password=password)
     return user, None
 
+
+
+
 def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
@@ -160,13 +163,16 @@ def register(request):
                 messages.error(request, tenant_error)
                 return render(request, 'authentication/register.html', {'form': form})
 
-            # Δημιουργία συνδρομής με βάση την επιλογή του χρήστη
+            # Καθορισμός διάρκειας συνδρομής
             if plan == 'trial':
                 end_date = timezone.now() + timedelta(days=30)
                 price = 0
-            else:
-                end_date = timezone.now() + timedelta(days=365)  # Παράδειγμα για ετήσια συνδρομή
-                price = 100  # Τιμή για την ετήσια συνδρομή (παράδειγμα)
+            elif plan == 'basic':
+                end_date = timezone.now() + timedelta(days=30)  # Μηνιαία συνδρομή
+                price = 10  # Παράδειγμα τιμής για μηνιαία συνδρομή
+            elif plan == 'premium':
+                end_date = timezone.now() + timedelta(days=365)  # Ετήσια συνδρομή
+                price = 100  # Παράδειγμα τιμής για ετήσια συνδρομή
 
             Subscription.objects.create(
                 tenant=tenant,
@@ -174,7 +180,7 @@ def register(request):
                 start_date=timezone.now(),
                 end_date=end_date,
                 price=price,
-                active=False
+                active=False  # Η συνδρομή δεν είναι ενεργή μέχρι να ολοκληρωθεί η πληρωμή
             )
 
             login(request, user)
@@ -186,6 +192,11 @@ def register(request):
         form = CustomUserCreationForm()
 
     return render(request, 'authentication/register.html', {'form': form})
+
+
+
+
+
 
 @login_required
 def process_payment(request):
