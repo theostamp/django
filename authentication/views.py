@@ -32,7 +32,75 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_GET
 from django.shortcuts import get_object_or_404
 from .models import LicenseKey  # Εισάγουμε το μοντέλο LicenseKey (θα το δημιουργήσουμε στη συνέχεια)
+import uuid
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.utils import timezone
+from datetime import timedelta
+from django.contrib.auth import login
+from .forms import CustomUserCreationForm
+from .models import LicenseKey
+from tenants.models import Subscription, Tenant
+from .utils import create_user, create_tenant  # Βεβαιωθείτε ότι η εισαγωγή είναι σωστή
 
+def register(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password1')
+            plan = form.cleaned_data.get('plan')
+            mac_address = request.POST.get('mac_address')
+            hostname = request.POST.get('hostname')
+
+            user, user_error = create_user(username, password)
+            if user_error:
+                messages.error(request, user_error)
+                return render(request, 'authentication/register.html', {'form': form})
+
+            tenant, tenant_error = create_tenant(user, plan)
+            if tenant_error:
+                messages.error(request, tenant_error)
+                return render(request, 'authentication/register.html', {'form': form})
+
+            # Καθορισμός διάρκειας συνδρομής
+            if plan == 'trial':
+                end_date = timezone.now() + timedelta(days=30)
+                price = 0
+            elif plan == 'basic':
+                end_date = timezone.now() + timedelta(days=30)  # Μηνιαία συνδρομή
+                price = 10  # Παράδειγμα τιμής για μηνιαία συνδρομή
+            elif plan == 'premium':
+                end_date = timezone.now() + timedelta(days=365)  # Ετήσια συνδρομή
+                price = 100  # Παράδειγμα τιμής για ετήσια συνδρομή
+
+            Subscription.objects.create(
+                tenant=tenant,
+                subscription_type=plan,
+                start_date=timezone.now(),
+                end_date=end_date,
+                price=price,
+                active=False  # Η συνδρομή δεν είναι ενεργή μέχρι να ολοκληρωθεί η πληρωμή
+            )
+
+            # Δημιουργία κλειδιού άδειας (license key)
+            license_key = uuid.uuid4().hex
+            LicenseKey.objects.create(
+                key=license_key,
+                mac_address=mac_address,
+                hostname=hostname,
+                tenant=tenant  # Σύνδεση με τον Tenant
+            )
+
+            login(request, user)
+            messages.success(request, 'Ο λογαριασμός δημιουργήθηκε επιτυχώς! Παρακαλώ ολοκληρώστε την πληρωμή σας.')
+            return redirect('payment')
+        else:
+            messages.error(request, 'Σφάλμα κατά την εγγραφή. Παρακαλώ ελέγξτε το φόρμα.')
+    else:
+        form = CustomUserCreationForm()
+
+    return render(request, 'authentication/register.html', {'form': form})
 
 
 
@@ -173,69 +241,6 @@ def create_user(username, password):
 
     user = User.objects.create_user(username=username, password=password)
     return user, None
-
-
-
-
-
-def register(request):
-    if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password1')
-            plan = form.cleaned_data.get('plan')
-            mac_address = request.POST.get('mac_address')
-            hostname = request.POST.get('hostname')
-
-            user, user_error = create_user(username, password)
-            if user_error:
-                messages.error(request, user_error)
-                return render(request, 'authentication/register.html', {'form': form})
-
-            tenant, tenant_error = create_tenant(user, plan)
-            if tenant_error:
-                messages.error(request, tenant_error)
-                return render(request, 'authentication/register.html', {'form': form})
-
-            # Καθορισμός διάρκειας συνδρομής
-            if plan == 'trial':
-                end_date = timezone.now() + timedelta(days=30)
-                price = 0
-            elif plan == 'basic':
-                end_date = timezone.now() + timedelta(days=30)  # Μηνιαία συνδρομή
-                price = 10  # Παράδειγμα τιμής για μηνιαία συνδρομή
-            elif plan == 'premium':
-                end_date = timezone.now() + timedelta(days=365)  # Ετήσια συνδρομή
-                price = 100  # Παράδειγμα τιμής για ετήσια συνδρομή
-
-            Subscription.objects.create(
-                tenant=tenant,
-                subscription_type=plan,
-                start_date=timezone.now(),
-                end_date=end_date,
-                price=price,
-                active=False  # Η συνδρομή δεν είναι ενεργή μέχρι να ολοκληρωθεί η πληρωμή
-            )
-
-            # Δημιουργία κλειδιού άδειας (license key)
-            license_key = uuid.uuid4().hex
-            LicenseKey.objects.create(
-                key=license_key,
-                mac_address=mac_address,
-                hostname=hostname,
-                tenant=tenant  # Σύνδεση με τον Tenant
-            )
-
-            login(request, user)
-            messages.success(request, 'Ο λογαριασμός δημιουργήθηκε επιτυχώς! Παρακαλώ ολοκληρώστε την πληρωμή σας.')
-            return redirect('payment')
-        else:
-            messages.error(request, 'Σφάλμα κατά την εγγραφή. Παρακαλώ ελέγξτε το φόρμα.')
-    else:
-        form = CustomUserCreationForm()
-
-    return render(request, 'authentication/register.html', {'form': form})
 
 
 

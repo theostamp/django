@@ -1,12 +1,11 @@
 
 # authentication/models.py
 
-
-
-from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
-from django_tenants.models import TenantMixin
-from .models import Tenant
+from django.utils import timezone
+from tenants.models import Tenant  # Χρησιμοποιούμε το πλήρες μονοπάτι για να αποφύγουμε τον κυκλικό import
+from django.contrib.auth.models import AbstractUser, Group, Permission
+
 
 class LicenseKey(models.Model):
     key = models.CharField(max_length=32, unique=True)
