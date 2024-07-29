@@ -20,6 +20,9 @@ from django.utils import timezone
 from datetime import timedelta
 import stripe
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
+from django.http import JsonResponse
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.contrib.auth.decorators import login_required
 
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 
