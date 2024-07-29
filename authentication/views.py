@@ -224,21 +224,18 @@ def register(request):
                 key=license_key,
                 mac_address=mac_address,
                 hostname=hostname,
-                user=user
+                tenant=tenant  # Σύνδεση με τον Tenant
             )
 
             login(request, user)
             messages.success(request, 'Ο λογαριασμός δημιουργήθηκε επιτυχώς! Παρακαλώ ολοκληρώστε την πληρωμή σας.')
-            return redirect('payment', {'license_key': license_key})  # Στέλνουμε το κλειδί άδειας στον client
+            return redirect('payment')
         else:
             messages.error(request, 'Σφάλμα κατά την εγγραφή. Παρακαλώ ελέγξτε το φόρμα.')
     else:
         form = CustomUserCreationForm()
 
     return render(request, 'authentication/register.html', {'form': form})
-
-
-
 
 
 

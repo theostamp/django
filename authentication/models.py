@@ -5,7 +5,18 @@
 
 from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
+from django_tenants.models import TenantMixin
+from .models import Tenant
 
+class LicenseKey(models.Model):
+    key = models.CharField(max_length=32, unique=True)
+    mac_address = models.CharField(max_length=17)
+    hostname = models.CharField(max_length=255)
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)  # Σύνδεση με τον Tenant
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.key
 
 
 class CustomUser(AbstractUser):
@@ -22,11 +33,3 @@ class Subscription(models.Model):
     active = models.BooleanField(default=True)
 
 
-class LicenseKey(models.Model):
-    key = models.CharField(max_length=100, unique=True)
-    mac_address = models.CharField(max_length=100)
-    hostname = models.CharField(max_length=100)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.key
