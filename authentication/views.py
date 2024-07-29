@@ -198,28 +198,40 @@ def register(request):
 
 
 
-@login_required
 def process_payment(request):
     if request.method == 'POST':
         form = PaymentForm(request.POST)
         if form.is_valid():
             stripe_token = form.cleaned_data['stripeToken']
+            plan = form.cleaned_data['plan']  # Υποθέτουμε ότι το σχέδιο περνάει από τη φόρμα
 
             try:
-                charge = stripe.Charge.create(
-                    amount=5000,  # Το ποσό σε cents (π.χ. $50.00)
-                    currency='usd',
-                    description='Example charge',
-                    source=stripe_token,
+                # Δημιουργία πελάτη στη Stripe
+                customer = stripe.Customer.create(
+                    email=request.user.email,
+                    source=stripe_token
                 )
-                # Εύρεση της συνδρομής και ενεργοποίησή της
+
+                # Συνδρομητικό πρόγραμμα ID από τη Stripe
+                if plan == 'trial':
+                    price_id = 'price_1PhmQSIKQeloAppQz3bvDtcL'  # Αντικαταστήστε με το πραγματικό ID από τη Stripe
+                elif plan == 'monthly':
+                    price_id = 'price_1PhmQSIKQeloAppQKB0gEd3t'  # Αντικαταστήστε με το πραγματικό ID από τη Stripe
+
+                # Δημιουργία συνδρομής στη Stripe
+                stripe.Subscription.create(
+                    customer=customer.id,
+                    items=[{'price': price_id}],
+                )
+
+                # Ενεργοποίηση της συνδρομής στο σύστημα σας
                 tenant = Tenant.objects.get(schema_name=request.user.username)
                 subscription = Subscription.objects.get(tenant=tenant)
                 subscription.active = True
                 subscription.save()
 
                 messages.success(request, 'Η πληρωμή σας ολοκληρώθηκε με επιτυχία!')
-                return redirect('payment_success')  # Ανακατεύθυνση στη σελίδα επιτυχούς πληρωμής
+                return redirect('index')
             except stripe.error.CardError as e:
                 messages.error(request, f'Η πληρωμή απέτυχε: {e.error.message}')
         else:
@@ -228,6 +240,10 @@ def process_payment(request):
         form = PaymentForm()
 
     return render(request, 'authentication/payment.html', {'form': form, 'stripe_public_key': settings.STRIPE_PUBLIC_KEY})
+
+
+
+
 
 @login_required
 def payment_success(request):
