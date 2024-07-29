@@ -1,21 +1,11 @@
 
 # authentication/models.py
 
-from django.db import models
-from django.utils import timezone
-from tenants.models import Tenant  # Χρησιμοποιούμε το πλήρες μονοπάτι για να αποφύγουμε τον κυκλικό import
+
+
 from django.contrib.auth.models import AbstractUser, Group, Permission
+from django.db import models
 
-
-class LicenseKey(models.Model):
-    key = models.CharField(max_length=32, unique=True)
-    mac_address = models.CharField(max_length=17)
-    hostname = models.CharField(max_length=255)
-    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)  # Σύνδεση με τον Tenant
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.key
 
 
 class CustomUser(AbstractUser):
@@ -30,5 +20,3 @@ class Subscription(models.Model):
     start_date = models.DateTimeField(auto_now_add=True)
     end_date = models.DateTimeField()
     active = models.BooleanField(default=True)
-
-

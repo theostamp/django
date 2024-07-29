@@ -18,7 +18,6 @@ urlpatterns = [
     path('get-csrf-token/', views.get_csrf_token, name='get_csrf_token'),
     path('payment/', views.process_payment, name='payment'),
     path('profile/', views.profile_view, name='profile'),
-    path('stripe-webhook/', views.stripe_webhook, name='stripe_webhook'),
-    path('payment_success/', views.payment_success, name='payment_success'),
-    path('check_license/', views.check_license, name='check_license'),
+    path('password_change/', views.CustomPasswordChangeView.as_view(), name='password_change'),
+    path('password_change_done/', views.CustomPasswordChangeDoneView.as_view(), name='password_change_done'),
 ]

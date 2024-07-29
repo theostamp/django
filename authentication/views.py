@@ -1,5 +1,4 @@
 # authentication/views.py
-
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
 from .forms import CustomUserCreationForm, CustomUserLoginForm, TenantURLForm, SubscriptionPlanForm, PaymentForm
@@ -13,154 +12,25 @@ from django.contrib.auth import get_user_model
 from django_tenants.utils import schema_context
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
+from django.urls import reverse_lazy
 import os
 import logging
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils import timezone
 from datetime import timedelta
 import stripe
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.conf import settings
-import stripe
-import uuid
+from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 
-# Βεβαιωθείτε ότι η μυστική κλείδα της Stripe έχει οριστεί σωστά
-stripe.api_key = settings.STRIPE_SECRET_KEY
-
-from django.http import JsonResponse
-from django.views.decorators.http import require_GET
-from django.shortcuts import get_object_or_404
-from .models import LicenseKey  # Εισάγουμε το μοντέλο LicenseKey (θα το δημιουργήσουμε στη συνέχεια)
-import uuid
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.utils import timezone
-from datetime import timedelta
-from django.contrib.auth import login
-from .forms import CustomUserCreationForm
-from .models import LicenseKey
-from tenants.models import Subscription, Tenant
-from .utils import create_user, create_tenant  # Βεβαιωθείτε ότι η εισαγωγή είναι σωστή
-
-def register(request):
-    if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password1')
-            plan = form.cleaned_data.get('plan')
-            mac_address = request.POST.get('mac_address')
-            hostname = request.POST.get('hostname')
-
-            user, user_error = create_user(username, password)
-            if user_error:
-                messages.error(request, user_error)
-                return render(request, 'authentication/register.html', {'form': form})
-
-            tenant, tenant_error = create_tenant(user, plan)
-            if tenant_error:
-                messages.error(request, tenant_error)
-                return render(request, 'authentication/register.html', {'form': form})
-
-            # Καθορισμός διάρκειας συνδρομής
-            if plan == 'trial':
-                end_date = timezone.now() + timedelta(days=30)
-                price = 0
-            elif plan == 'basic':
-                end_date = timezone.now() + timedelta(days=30)  # Μηνιαία συνδρομή
-                price = 10  # Παράδειγμα τιμής για μηνιαία συνδρομή
-            elif plan == 'premium':
-                end_date = timezone.now() + timedelta(days=365)  # Ετήσια συνδρομή
-                price = 100  # Παράδειγμα τιμής για ετήσια συνδρομή
-
-            Subscription.objects.create(
-                tenant=tenant,
-                subscription_type=plan,
-                start_date=timezone.now(),
-                end_date=end_date,
-                price=price,
-                active=False  # Η συνδρομή δεν είναι ενεργή μέχρι να ολοκληρωθεί η πληρωμή
-            )
-
-            # Δημιουργία κλειδιού άδειας (license key)
-            license_key = uuid.uuid4().hex
-            LicenseKey.objects.create(
-                key=license_key,
-                mac_address=mac_address,
-                hostname=hostname,
-                tenant=tenant  # Σύνδεση με τον Tenant
-            )
-
-            login(request, user)
-            messages.success(request, 'Ο λογαριασμός δημιουργήθηκε επιτυχώς! Παρακαλώ ολοκληρώστε την πληρωμή σας.')
-            return redirect('payment')
-        else:
-            messages.error(request, 'Σφάλμα κατά την εγγραφή. Παρακαλώ ελέγξτε το φόρμα.')
-    else:
-        form = CustomUserCreationForm()
-
-    return render(request, 'authentication/register.html', {'form': form})
-
-
-
-
-@require_GET
-def check_license(request):
-    license_key = request.GET.get('license_key')
-    mac_address = request.GET.get('mac_address')
-    hostname = request.GET.get('hostname')
-
-    if not all([license_key, mac_address, hostname]):
-        return JsonResponse({'valid': False, 'message': 'Missing parameters'}, status=400)
-
-    try:
-        # Ελέγχουμε αν το κλειδί άδειας υπάρχει στη βάση δεδομένων
-        license = get_object_or_404(LicenseKey, key=license_key)
-
-        # Έλεγχος αν ο συνδυασμός MAC address και hostname αντιστοιχεί στο κλειδί άδειας
-        if license.mac_address == mac_address and license.hostname == hostname:
-            return JsonResponse({'valid': True, 'message': 'License key is valid.'})
-        else:
-            return JsonResponse({'valid': False, 'message': 'License key does not match the device.'})
-    except LicenseKey.DoesNotExist:
-        return JsonResponse({'valid': False, 'message': 'License key not found'}, status=404)
-
-
-@csrf_exempt
-def stripe_webhook(request):
-    payload = request.body
-    sig_header = request.META['HTTP_STRIPE_SIGNATURE']
-    endpoint_secret = settings.STRIPE_ENDPOINT_SECRET  # Ορίστε το στο settings.py
-
-    event = None
-
-    try:
-        event = stripe.Webhook.construct_event(
-            payload, sig_header, endpoint_secret
-        )
-    except ValueError as e:
-        # Invalid payload
-        return JsonResponse({'status': 'invalid payload'}, status=400)
-    except stripe.error.SignatureVerificationError as e:
-        # Invalid signature
-        return JsonResponse({'status': 'invalid signature'}, status=400)
-
-    # Handle the event
-    if event['type'] == 'payment_intent.succeeded':
-        payment_intent = event['data']['object']
-        # Process the payment intent (προσθέστε τη λογική σας εδώ)
-    else:
-        print('Unhandled event type {}'.format(event['type']))
-
-    return JsonResponse({'status': 'success'}, status=200)
+stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 
 logger = logging.getLogger('django')
 
 User = get_user_model()
 
+
 @ensure_csrf_cookie
 def get_csrf_token(request):
+    logger.debug("Απόκτηση CSRF Token")
     return JsonResponse({'csrfToken': request.META.get('CSRF_COOKIE')})
 
 @login_required
@@ -242,36 +112,65 @@ def create_user(username, password):
     user = User.objects.create_user(username=username, password=password)
     return user, None
 
+def register(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password1')
+            plan = form.cleaned_data.get('plan')
 
+            user, user_error = create_user(username, password)
+            if user_error:
+                messages.error(request, user_error)
+                return render(request, 'authentication/register.html', {'form': form})
 
+            tenant, tenant_error = create_tenant(user, plan)
+            if tenant_error:
+                messages.error(request, tenant_error)
+                return render(request, 'authentication/register.html', {'form': form})
 
+            # Δημιουργία συνδρομής με βάση την επιλογή του χρήστη
+            if plan == 'trial':
+                end_date = timezone.now() + timedelta(days=30)
+                price = 0
+            else:
+                end_date = timezone.now() + timedelta(days=365)  # Παράδειγμα για ετήσια συνδρομή
+                price = 100  # Τιμή για την ετήσια συνδρομή (παράδειγμα)
+
+            Subscription.objects.create(
+                tenant=tenant,
+                subscription_type=plan,
+                start_date=timezone.now(),
+                end_date=end_date,
+                price=price
+            )
+
+            login(request, user)
+            messages.success(request, 'Ο λογαριασμός δημιουργήθηκε επιτυχώς! Παρακαλώ ολοκληρώστε την πληρωμή σας.')
+            return redirect('payment')
+        else:
+            messages.error(request, 'Σφάλμα κατά την εγγραφή. Παρακαλώ ελέγξτε το φόρμα.')
+    else:
+        form = CustomUserCreationForm()
+
+    return render(request, 'authentication/register.html', {'form': form})
+
+@login_required
 def process_payment(request):
     if request.method == 'POST':
         form = PaymentForm(request.POST)
         if form.is_valid():
             stripe_token = form.cleaned_data['stripeToken']
-            plan = form.cleaned_data['plan']  # Υποθέτουμε ότι το σχέδιο περνάει από τη φόρμα
 
             try:
-                # Δημιουργία πελάτη στη Stripe
-                customer = stripe.Customer.create(
-                    email=request.user.email,
-                    source=stripe_token
+                charge = stripe.Charge.create(
+                    amount=5000,  # Το ποσό σε cents (π.χ. $50.00)
+                    currency='usd',
+                    description='Example charge',
+                    source=stripe_token,
                 )
-
-                # Συνδρομητικό πρόγραμμα ID από τη Stripe
-                if plan == 'trial':
-                    price_id = 'price_1PhmQSIKQeloAppQz3bvDtcL'  # Αντικαταστήστε με το πραγματικό ID από τη Stripe
-                elif plan == 'monthly':
-                    price_id = 'price_1PhmQSIKQeloAppQKB0gEd3t'  # Αντικαταστήστε με το πραγματικό ID από τη Stripe
-
-                # Δημιουργία συνδρομής στη Stripe
-                stripe.Subscription.create(
-                    customer=customer.id,
-                    items=[{'price': price_id}],
-                )
-
-                # Ενεργοποίηση της συνδρομής στο σύστημα σας
+                # Εύρεση της συνδρομής και ενεργοποίησή της
                 tenant = Tenant.objects.get(schema_name=request.user.username)
                 subscription = Subscription.objects.get(tenant=tenant)
                 subscription.active = True
@@ -287,14 +186,6 @@ def process_payment(request):
         form = PaymentForm()
 
     return render(request, 'authentication/payment.html', {'form': form, 'stripe_public_key': settings.STRIPE_PUBLIC_KEY})
-
-
-
-
-
-@login_required
-def payment_success(request):
-    return render(request, 'authentication/payment_success.html')
 
 @login_required
 def select_subscription(request):
@@ -361,6 +252,13 @@ def profile_view(request):
     }
 
     return render(request, 'authentication/profile.html', context)
+
+class CustomPasswordChangeView(PasswordChangeView):
+    template_name = 'authentication/password_change.html'
+    success_url = reverse_lazy('password_change_done')
+
+class CustomPasswordChangeDoneView(PasswordChangeDoneView):
+    template_name = 'authentication/password_change_done.html'
 
 def features(request):
     return render(request, 'authentication/features.html')
