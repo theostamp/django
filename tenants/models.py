@@ -1,6 +1,12 @@
+
 # tenants/models.py
+
 from django.db import models
 from django_tenants.models import TenantMixin, DomainMixin
+from django.utils import timezone
+from django.db import models
+from django_tenants.models import TenantMixin, DomainMixin
+from django.utils import timezone
 
 class Tenant(TenantMixin):
     name = models.CharField(max_length=100, unique=True)
@@ -36,3 +42,13 @@ class Subscription(models.Model):
 
     def __str__(self):
         return f"Subscription for {self.tenant.name} [{self.subscription_type}]"
+
+class License(models.Model):
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)
+    license_key = models.CharField(max_length=100, unique=True)
+    hardware_id = models.CharField(max_length=100, blank=True, null=True)
+    expiration_date = models.DateField()
+    active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.tenant.name} - {self.license_key}"
