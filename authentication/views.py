@@ -23,9 +23,41 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 import stripe
+import uuid
 
 # Βεβαιωθείτε ότι η μυστική κλείδα της Stripe έχει οριστεί σωστά
 stripe.api_key = settings.STRIPE_SECRET_KEY
+
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
+from django.shortcuts import get_object_or_404
+from .models import LicenseKey  # Εισάγουμε το μοντέλο LicenseKey (θα το δημιουργήσουμε στη συνέχεια)
+
+
+
+
+
+@require_GET
+def check_license(request):
+    license_key = request.GET.get('license_key')
+    mac_address = request.GET.get('mac_address')
+    hostname = request.GET.get('hostname')
+
+    if not all([license_key, mac_address, hostname]):
+        return JsonResponse({'valid': False, 'message': 'Missing parameters'}, status=400)
+
+    try:
+        # Ελέγχουμε αν το κλειδί άδειας υπάρχει στη βάση δεδομένων
+        license = get_object_or_404(LicenseKey, key=license_key)
+
+        # Έλεγχος αν ο συνδυασμός MAC address και hostname αντιστοιχεί στο κλειδί άδειας
+        if license.mac_address == mac_address and license.hostname == hostname:
+            return JsonResponse({'valid': True, 'message': 'License key is valid.'})
+        else:
+            return JsonResponse({'valid': False, 'message': 'License key does not match the device.'})
+    except LicenseKey.DoesNotExist:
+        return JsonResponse({'valid': False, 'message': 'License key not found'}, status=404)
+
 
 @csrf_exempt
 def stripe_webhook(request):
@@ -145,6 +177,7 @@ def create_user(username, password):
 
 
 
+
 def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
@@ -152,6 +185,8 @@ def register(request):
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password1')
             plan = form.cleaned_data.get('plan')
+            mac_address = request.POST.get('mac_address')
+            hostname = request.POST.get('hostname')
 
             user, user_error = create_user(username, password)
             if user_error:
@@ -183,15 +218,25 @@ def register(request):
                 active=False  # Η συνδρομή δεν είναι ενεργή μέχρι να ολοκληρωθεί η πληρωμή
             )
 
+            # Δημιουργία κλειδιού άδειας (license key)
+            license_key = uuid.uuid4().hex
+            LicenseKey.objects.create(
+                key=license_key,
+                mac_address=mac_address,
+                hostname=hostname,
+                user=user
+            )
+
             login(request, user)
             messages.success(request, 'Ο λογαριασμός δημιουργήθηκε επιτυχώς! Παρακαλώ ολοκληρώστε την πληρωμή σας.')
-            return redirect('payment')
+            return redirect('payment', {'license_key': license_key})  # Στέλνουμε το κλειδί άδειας στον client
         else:
             messages.error(request, 'Σφάλμα κατά την εγγραφή. Παρακαλώ ελέγξτε το φόρμα.')
     else:
         form = CustomUserCreationForm()
 
     return render(request, 'authentication/register.html', {'form': form})
+
 
 
 

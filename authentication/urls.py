@@ -20,4 +20,5 @@ urlpatterns = [
     path('profile/', views.profile_view, name='profile'),
     path('stripe-webhook/', views.stripe_webhook, name='stripe_webhook'),
     path('payment_success/', views.payment_success, name='payment_success'),
+    path('check_license/', views.check_license, name='check_license'),
 ]

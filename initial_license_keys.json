@@ -1,0 +1,12 @@
+[
+    {
+        "model": "authentication.licensekey",
+        "pk": 1,
+        "fields": {
+            "key": "YOUR_LICENSE_KEY",
+            "mac_address": "YOUR_MAC_ADDRESS",
+            "hostname": "YOUR_HOSTNAME",
+            "created_at": "2024-07-28T00:00:00Z"
+        }
+    }
+]

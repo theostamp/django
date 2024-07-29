@@ -20,3 +20,13 @@ class Subscription(models.Model):
     start_date = models.DateTimeField(auto_now_add=True)
     end_date = models.DateTimeField()
     active = models.BooleanField(default=True)
+
+
+class LicenseKey(models.Model):
+    key = models.CharField(max_length=100, unique=True)
+    mac_address = models.CharField(max_length=100)
+    hostname = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.key
