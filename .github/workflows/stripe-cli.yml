@@ -1,0 +1,28 @@
+name: Stripe CLI Setup
+
+on: [push]
+
+jobs:
+  stripe-cli-setup:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install Stripe CLI
+      run: |
+        curl -L https://github.com/stripe/stripe-cli/releases/download/v1.9.6/stripe_1.9.6_linux_x86_64.tar.gz -o stripe.tar.gz
+        tar -xzf stripe.tar.gz -C /usr/local/bin
+        stripe version
+
+    - name: Authenticate Stripe CLI
+      env:
+        STRIPE_API_KEY: ${{ secrets.STRIPE_API_KEY }}
+      run: |
+        echo $STRIPE_API_KEY | stripe login --api-key
+        stripe whoami
+
+    - name: Forward Stripe webhook events
+      run: |
+        stripe listen --forward-to localhost:4242/stripe_webhooks
