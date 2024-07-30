@@ -10,11 +10,11 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
+    - name: Download Stripe CLI
+      run: wget https://github.com/stripe/stripe-cli/releases/download/v1.21.2/stripe_1.21.2_linux_arm64.deb
+
     - name: Install Stripe CLI
-      run: |
-        curl -L https://github.com/stripe/stripe-cli/releases/download/v1.9.6/stripe_1.9.6_linux_x86_64.tar.gz -o stripe.tar.gz
-        tar -xzf stripe.tar.gz -C /usr/local/bin
-        stripe version
+      run: sudo dpkg -i stripe_1.21.2_linux_arm64.deb
 
     - name: Authenticate Stripe CLI
       env:
