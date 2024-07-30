@@ -24,6 +24,23 @@
 {% else %}
     <p>Δεν βρέθηκαν στοιχεία συνδρομής.</p>
 {% endif %}
+<h1>Profile for {{ current_user.username }}</h1>
+<p>Subscription Type: {{ subscription.subscription_type }}</p>
+<p>Temporary Key: {{ temporary_key }}</p>
+<!-- Προσθήκη φόρμας για εισαγωγή προσωρινού κλειδιού και ενεργοποίηση άδειας -->
+<form method="post" action="{% url 'activate_license' %}">
+    {% csrf_token %}
+    <input type="hidden" name="temporary_key" value="{{ temporary_key }}">
+    <label for="hardware_id">Hardware ID:</label>
+    <input type="text" id="hardware_id" name="hardware_id">
+    <label for="computer_name">Computer Name:</label>
+    <input type="text" id="computer_name" name="computer_name">
+    <button type="submit">Activate License</button>
+</form>
+
+
+
+
 
 <a href="{% url 'password_change' %}" class="btn btn-primary">Αλλαγή Κωδικού Πρόσβασης</a>
 {% endblock %}
