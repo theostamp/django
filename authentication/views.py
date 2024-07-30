@@ -23,6 +23,14 @@ from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 from django.http import JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.contrib.auth.decorators import login_required
+import json
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+import stripe
+import uuid
+
+
+
 
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 
@@ -277,3 +285,48 @@ def contacts(request):
 
 def index(request):
     return render(request, 'authentication/index.html')
+
+
+
+@csrf_exempt
+def stripe_webhook(request):
+    payload = request.body
+    sig_header = request.META['HTTP_STRIPE_SIGNATURE']
+    endpoint_secret = 'your_webhook_secret'
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, endpoint_secret
+        )
+    except ValueError as e:
+        # Invalid payload
+        return HttpResponse(status=400)
+    except stripe.error.SignatureVerificationError as e:
+        # Invalid signature
+        return HttpResponse(status=400)
+
+    # Handle the event
+    if event['type'] == 'payment_intent.succeeded':
+        payment_intent = event['data']['object']
+        customer_id = payment_intent['customer']
+
+        # Generate temporary key
+        temporary_key = str(uuid.uuid4())[:8]
+
+        # Save the temporary key in the database, associated with the customer_id
+        # Assuming you have a model to store the temporary keys
+        # Example:
+        # TemporaryKey.objects.create(customer_id=customer_id, key=temporary_key)
+
+        print(f'Successful payment! Temporary key generated: {temporary_key}')
+        # Send the temporary key to the user by email or other means
+
+    elif event['type'] == 'payment_method.attached':
+        payment_method = event['data']['object']
+        print('PaymentMethod was attached to a Customer!')
+
+    # ... handle other event types
+    else:
+        print('Unhandled event type {}'.format(event['type']))
+
+    return HttpResponse(status=200)

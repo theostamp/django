@@ -20,4 +20,7 @@ urlpatterns = [
     path('profile/', views.profile_view, name='profile'),
     path('password_change/', views.CustomPasswordChangeView.as_view(), name='password_change'),
     path('password_change_done/', views.CustomPasswordChangeDoneView.as_view(), name='password_change_done'),
+    path('stripe-webhook/', views.stripe_webhook, name='stripe-webhook'),
 ]
+
+

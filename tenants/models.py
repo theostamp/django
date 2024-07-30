@@ -1,12 +1,9 @@
-
 # tenants/models.py
 
 from django.db import models
 from django_tenants.models import TenantMixin, DomainMixin
 from django.utils import timezone
-from django.db import models
-from django_tenants.models import TenantMixin, DomainMixin
-from django.utils import timezone
+import uuid
 
 class Tenant(TenantMixin):
     name = models.CharField(max_length=100, unique=True)
@@ -52,3 +49,15 @@ class License(models.Model):
 
     def __str__(self):
         return f"{self.tenant.name} - {self.license_key}"
+
+class TemporaryKey(models.Model):
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)
+    customer_id = models.CharField(max_length=255)
+    key = models.CharField(max_length=8)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    def save(self, *args, **kwargs):
+        if not self.expires_at:
+            self.expires_at = timezone.now() + timezone.timedelta(hours=1)
+        super().save(*args, **kwargs)
