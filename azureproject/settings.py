@@ -31,7 +31,7 @@ ALLOWED_HOSTS = ['localhost', '*', '[::1]', 'dign-fkh0cyakasa6cqf4.eastus-01.azu
 
 SHARED_APPS = [
     'django_tenants',
-    'tenants.apps.TenantsConfig',
+    # 'tenants.apps.TenantsConfig',
     'authentication.apps.AuthenticationConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -44,6 +44,8 @@ SHARED_APPS = [
 
 TENANT_APPS = [
     'tables.apps.TablesConfig',
+    'authentication.apps.AuthenticationConfig',
+    # 'tenants.apps.TenantsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -68,8 +70,8 @@ MIDDLEWARE = [
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 ROOT_URLCONF = 'azureproject.urls'
 
-TENANT_MODEL = "tenants.Tenant"
-TENANT_DOMAIN_MODEL = "tenants.Domain"
+TENANT_MODEL = "authentication.Tenant"
+TENANT_DOMAIN_MODEL = "authentication.Domain"
 
 DATABASES = {
     'default': {

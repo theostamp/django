@@ -2,6 +2,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import CustomUser
+from .models import Subscription
 
 class CustomUserCreationForm(UserCreationForm):
     PLAN_CHOICES = [
@@ -47,3 +48,14 @@ class SubscriptionPlanForm(forms.Form):
 
 class PaymentForm(forms.Form):
     stripeToken = forms.CharField(widget=forms.HiddenInput())
+
+
+
+class SubscriptionForm(forms.ModelForm):
+    class Meta:
+        model = Subscription
+        fields = ['tenant', 'start_date', 'end_date', 'subscription_type', 'price']
+        widgets = {
+            'start_date': forms.DateInput(attrs={'type': 'date'}),
+            'end_date': forms.DateInput(attrs={'type': 'date'}),
+        }

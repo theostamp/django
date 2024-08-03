@@ -3,9 +3,9 @@ python3 -m pip install -r requirements.txt
 echo "Running migrations..."
 python manage.py makemigrations authentication
 python manage.py makemigrations restaurant_review
-python manage.py makemigrations tenants
+python manage.py makemigrations authentication
 python manage.py makemigrations
-python manage.py migrate tenants --noinput || echo "Migrate tenants failed"
+python manage.py migrate authentication --noinput || echo "Migrate authentication failed"
 python manage.py migrate authentication --noinput || echo "Migrate authentication failed"
 python manage.py migrate restaurant_review --noinput || echo "Migrate restaurant_review failed"
 python manage.py migrate_schemas --noinput || echo "Migrate schemas failed"
@@ -13,7 +13,7 @@ python manage.py migrate --noinput || echo "Migrate failed"
 
 echo "Creating public tenant and domain..."
 python manage.py shell << END
-from tenants.models import Tenant, Domain
+from authentication.models import Tenant, Domain
 from django.db import connection
 
 try:

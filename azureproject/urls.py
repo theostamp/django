@@ -10,5 +10,5 @@ urlpatterns = [
     path('authentication/', include('authentication.urls')),
     path('get-csrf-token/', include('authentication.urls')),  # Σωστή διαδρομή για το CSRF Token
     path('accounts/', include('django.contrib.auth.urls')),
-    path('tenants/', include('tenants.urls')),
+    # path('tenants/', include('tenants.urls')),
 ]

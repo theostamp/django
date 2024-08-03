@@ -95,6 +95,6 @@ DATABASE_ROUTERS = (
 
 
 
-TENANT_MODEL = "tenants.Tenant"
-TENANT_DOMAIN_MODEL = "tenants.Domain"
+TENANT_MODEL = "authentication.Tenant"
+TENANT_DOMAIN_MODEL = "authentication.Domain"
 TENANTS_BASE_FOLDER = os.path.join(BASE_DIR, 'tenants_folders')
