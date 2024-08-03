@@ -1,45 +1,13 @@
-
-# authentication/models.py
-
-
-
 from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
 from django_tenants.models import TenantMixin, DomainMixin
 from django.utils import timezone
-
 
 class CustomUser(AbstractUser):
     restaurant_name = models.CharField(max_length=100, blank=True)
     phone_number = models.CharField(max_length=15, blank=True)
     groups = models.ManyToManyField(Group, related_name='custom_user_set')
     user_permissions = models.ManyToManyField(Permission, related_name='custom_user_set_permissions')
-
-
-
-class Subscription(models.Model):
-    SUBSCRIPTION_TYPES = (
-        ('trial', 'One Month Trial'),
-        ('basic', 'Basic'),
-        ('premium', 'Premium'),
-        ('enterprise', 'Enterprise'),
-    )
-
-    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)
-    start_date = models.DateField()
-    end_date = models.DateField()
-    subscription_type = models.CharField(max_length=100, choices=SUBSCRIPTION_TYPES)
-    price = models.DecimalField(max_digits=6, decimal_places=2, default=0.0)
-    active = models.BooleanField(default=False)
-
-    def __str__(self):
-        return f"Subscription for {self.tenant.name} [{self.subscription_type}]"
-
-
-
-
-
-
 
 class Tenant(TenantMixin):
     name = models.CharField(max_length=100, unique=True)
@@ -70,7 +38,7 @@ class Subscription(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
     subscription_type = models.CharField(max_length=100, choices=SUBSCRIPTION_TYPES)
-    price = models.DecimalField(max_digits=6, decimal_places=2)
+    price = models.DecimalField(max_digits=6, decimal_places=2, default=0.0)
     active = models.BooleanField(default=False)
 
     def __str__(self):
@@ -89,7 +57,7 @@ class License(models.Model):
 class TemporaryKey(models.Model):
     tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)
     customer_id = models.CharField(max_length=255)
-    key = models.CharField(max_length=8)
+    key = models.CharField(maxlength=8)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
 
