@@ -39,11 +39,25 @@ def get_csrf_token(request):
 
 @login_required
 def payment_view(request):
+    paypal_client_id = settings.PAYPAL_CLIENT_ID
+    stripe_public_key = settings.STRIPE_PUBLIC_KEY
+
+    # Εκτυπώσεις για έλεγχο
+    logger.debug(f"PayPal Client ID: {paypal_client_id}")
+    print(f"PayPal Client ID: {paypal_client_id}")  # Εκτύπωση στο CLI
+    logger.debug(f"Stripe Public Key: {stripe_public_key}")
+    print(f"Stripe Public Key: {stripe_public_key}")  # Εκτύπωση στο CLI
+
     context = {
-        'PAYPAL_CLIENT_ID': settings.PAYPAL_CLIENT_ID,
-        'stripe_public_key': settings.STRIPE_PUBLIC_KEY
+        'PAYPAL_CLIENT_ID': paypal_client_id,
+        'stripe_public_key': stripe_public_key,
+        'form': PaymentForm(),
     }
     return render(request, 'payment/payment.html', context)
+
+# Ο υπόλοιπος κώδικας παραμένει ως έχει
+
+
 
 def create_payment(request):
     if request.method == "POST":
@@ -75,6 +89,9 @@ def create_payment(request):
         else:
             return render(request, 'payment/error.html', {'error': payment.error})
     return render(request, 'payment/create.html')
+
+
+
 
 @csrf_exempt
 def execute_payment(request):
