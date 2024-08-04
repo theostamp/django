@@ -18,3 +18,4 @@ beautifulsoup4
 celery
 python-decouple
 stripe
+paypalrestsdk
