@@ -21,6 +21,9 @@ import string
 import uuid
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 from django.urls import reverse_lazy
+from decouple import config
+
+
 
 logger = logging.getLogger('django')
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')

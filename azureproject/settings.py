@@ -2,6 +2,9 @@ import os
 from pathlib import Path
 from decouple import config
 
+
+import paypalrestsdk
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # URL to use when referring to static files located in STATIC_ROOT.
@@ -162,17 +165,15 @@ CELERY_TASK_SERIALIZER = 'json'
 STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY')
 STRIPE_PUBLIC_KEY = config('STRIPE_PUBLIC_KEY')
 
-import paypalrestsdk
+PAYPAL_MODE = 'sandbox'  # live για παραγωγή
+PAYPAL_CLIENT_ID = 'AcbMn8UsnZKDaxyFilw8t_fibfL5QiNJQ0LW4p85cJQuyiXBSAUZwJsvk4P6Ojd3kMc8cI_l5hxVb0Q2'
+PAYPAL_CLIENT_SECRET = 'ELwUnsP1Hey3bofKSgFT4aW9_r-Ooc21g48AmFRd6BKKwSAw-XznPeGsUzmSEA0j1psBfZnIfZpqFOMD'
 
-# PAYPAL_MODE = 'sandbox'  # live για παραγωγή
-# PAYPAL_CLIENT_ID = 'AcbMn8UsnZKDaxyFilw8t_fibfL5QiNJQ0LW4p85cJQuyiXBSAUZwJsvk4P6Ojd3kMc8cI_l5hxVb0Q2'
-# PAYPAL_CLIENT_SECRET = 'ELwUnsP1Hey3bofKSgFT4aW9_r-Ooc21g48AmFRd6BKKwSAw-XznPeGsUzmSEA0j1psBfZnIfZpqFOMD'
+# import paypalrestsdk
 
-import paypalrestsdk
-
-PAYPAL_MODE = 'sandbox'  # ή 'live' για παραγωγή
-PAYPAL_CLIENT_ID = config('PAYPAL_CLIENT_ID')
-PAYPAL_CLIENT_SECRET = config('PAYPAL_CLIENT_SECRET')
+# PAYPAL_MODE = 'sandbox'  # ή 'live' για παραγωγή
+# PAYPAL_CLIENT_ID = config('PAYPAL_CLIENT_ID')
+# PAYPAL_CLIENT_SECRET = config('PAYPAL_CLIENT_SECRET')
 
 paypalrestsdk.configure({
     "mode": PAYPAL_MODE,
