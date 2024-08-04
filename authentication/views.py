@@ -236,11 +236,16 @@ def profile_view(request):
     tenant = None
     subscription = None
     temporary_key = None
+    hardware_id = None
+    computer_name = None
 
     try:
         tenant = Tenant.objects.get(schema_name=current_user.username)
         subscription = Subscription.objects.get(tenant=tenant)
-        # Αν δεν υπάρχει προσωρινό κλειδί, δημιουργήστε ένα νέο
+        license = License.objects.get(tenant=tenant)
+        hardware_id = license.hardware_id
+        computer_name = license.computer_name
+
         if not subscription.temporary_key:
             temporary_key = generate_temporary_key()
             subscription.temporary_key = temporary_key
@@ -251,12 +256,16 @@ def profile_view(request):
         pass
     except Subscription.DoesNotExist:
         pass
+    except License.DoesNotExist:
+        pass
 
     context = {
         'current_user': current_user,
         'tenant': tenant,
         'subscription': subscription,
         'temporary_key': temporary_key,
+        'hardware_id': hardware_id,
+        'computer_name': computer_name,
     }
 
     return render(request, 'authentication/profile.html', context)
@@ -279,6 +288,7 @@ def activate_license(request):
         license, created = License.objects.get_or_create(tenant=tenant)
         license.license_key = permanent_key
         license.hardware_id = hardware_id
+        license.computer_name = computer_name
         license.expiration_date = expiration_date
         license.active = True
         license.save()
