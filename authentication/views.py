@@ -8,50 +8,88 @@ from django.contrib.auth import get_user_model
 from django_tenants.utils import schema_context
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
-from django.urls import reverse_lazy
-from django.utils import timezone
-from datetime import timedelta
+import stripe
 import os
 import logging
-import stripe
-import uuid
+import paypalrestsdk
+from .forms import CustomUserCreationForm, PaymentForm, SubscriptionPlanForm, CustomUserLoginForm, TenantURLForm
+from .models import Tenant, Domain, Subscription, CustomUser, License
+from django.utils import timezone
+from datetime import timedelta
 import random
 import string
-import paypalrestsdk
-
+import uuid
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
+from django.urls import reverse_lazy
 
-from .forms import (
-    CustomUserCreationForm, CustomUserLoginForm, 
-    TenantURLForm, SubscriptionPlanForm, PaymentForm
-)
-from .models import Tenant, Domain, Subscription, CustomUser, License
-from django.contrib.auth.decorators import login_required
-
-@login_required
-def payment_view(request):
-    context = {
-        'PAYPAL_CLIENT_ID': settings.PAYPAL_CLIENT_ID
-    }
-    return render(request, 'payment/payment.html', context)
-
-
-stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 logger = logging.getLogger('django')
-User = get_user_model()
-
-
+stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 paypalrestsdk.configure({
     "mode": settings.PAYPAL_MODE,  # sandbox ή live
     "client_id": settings.PAYPAL_CLIENT_ID,
     "client_secret": settings.PAYPAL_CLIENT_SECRET
 })
 
+User = get_user_model()
 
 @ensure_csrf_cookie
 def get_csrf_token(request):
     logger.debug("Απόκτηση CSRF Token")
     return JsonResponse({'csrfToken': request.META.get('CSRF_COOKIE')})
+
+@login_required
+def payment_view(request):
+    context = {
+        'PAYPAL_CLIENT_ID': settings.PAYPAL_CLIENT_ID,
+        'stripe_public_key': settings.STRIPE_PUBLIC_KEY
+    }
+    return render(request, 'payment/payment.html', context)
+
+def create_payment(request):
+    if request.method == "POST":
+        payment = paypalrestsdk.Payment({
+            "intent": "sale",
+            "payer": {
+                "payment_method": "paypal"},
+            "redirect_urls": {
+                "return_url": "http://localhost:8000/payment/execute",
+                "cancel_url": "http://localhost:8000/payment/cancel"},
+            "transactions": [{
+                "item_list": {
+                    "items": [{
+                        "name": "subscription",
+                        "sku": "001",
+                        "price": "10.00",
+                        "currency": "USD",
+                        "quantity": 1}]},
+                "amount": {
+                    "total": "10.00",
+                    "currency": "USD"},
+                "description": "Subscription payment."}]})
+
+        if payment.create():
+            for link in payment.links:
+                if link.rel == "approval_url":
+                    approval_url = str(link.href)
+                    return redirect(approval_url)
+        else:
+            return render(request, 'payment/error.html', {'error': payment.error})
+    return render(request, 'payment/create.html')
+
+@csrf_exempt
+def execute_payment(request):
+    payment_id = request.GET.get('paymentId')
+    payer_id = request.GET.get('PayerID')
+
+    payment = paypalrestsdk.Payment.find(payment_id)
+
+    if payment.execute({"payer_id": payer_id}):
+        return render(request, 'payment/success.html')
+    else:
+        return render(request, 'payment/error.html', {'error': payment.error})
+
+def payment_cancelled(request):
+    return render(request, 'payment/cancelled.html')
 
 @login_required
 def user_credits(request):
@@ -399,55 +437,3 @@ def stripe_webhook(request):
         print('Unhandled event type {}'.format(event['type']))
 
     return HttpResponse(status=200)
-
-
-
-
-
-def create_payment(request):
-    if request.method == "POST":
-        payment = paypalrestsdk.Payment({
-            "intent": "sale",
-            "payer": {
-                "payment_method": "paypal"},
-            "redirect_urls": {
-                "return_url": "http://localhost:8000/payment/execute",
-                "cancel_url": "http://localhost:8000/payment/cancel"},
-            "transactions": [{
-                "item_list": {
-                    "items": [{
-                        "name": "subscription",
-                        "sku": "001",
-                        "price": "10.00",
-                        "currency": "USD",
-                        "quantity": 1}]},
-                "amount": {
-                    "total": "10.00",
-                    "currency": "USD"},
-                "description": "Subscription payment."}]})
-
-        if payment.create():
-            for link in payment.links:
-                if link.rel == "approval_url":
-                    approval_url = str(link.href)
-                    return redirect(approval_url)
-        else:
-            return render(request, 'payment/error.html', {'error': payment.error})
-    return render(request, 'payment/create.html')
-
-@csrf_exempt
-def execute_payment(request):
-    payment_id = request.GET.get('paymentId')
-    payer_id = request.GET.get('PayerID')
-
-    payment = paypalrestsdk.Payment.find(payment_id)
-
-    if payment.execute({"payer_id": payer_id}):
-        return render(request, 'payment/success.html')
-    else:
-        return render(request, 'payment/error.html', {'error': payment.error})
-
-def payment_cancelled(request):
-    return render(request, 'payment/cancelled.html')
-
-
