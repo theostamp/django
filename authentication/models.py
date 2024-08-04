@@ -51,7 +51,8 @@ class License(models.Model):
     tenant = models.OneToOneField(Tenant, on_delete=models.CASCADE)
     license_key = models.CharField(max_length=100, unique=True)
     hardware_id = models.CharField(max_length=100)
-    computer_name = models.CharField(max_length=100, default='TemporaryName')  # Προσωρινή default τιμή
+    computer_name = models.CharField(max_length=100)  # Προσωρινή default τιμή
+    # computer_name = models.CharField(max_length=100, default='TemporaryName')  # Προσωρινή default τιμή
     expiration_date = models.DateField()
     active = models.BooleanField(default=True)
 
