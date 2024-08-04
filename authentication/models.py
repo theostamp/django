@@ -50,9 +50,10 @@ class Subscription(models.Model):
 
 
 class License(models.Model):
-    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)
-    license_key = models.CharField(max_length=100, unique=True)
-    hardware_id = models.CharField(max_length=100, blank=True, null=True)
+    tenant = models.OneToOneField(Tenant, on_delete=models.CASCADE)
+    license_key = models.CharField(max_length=255, unique=True)
+    hardware_id = models.CharField(max_length=255)
+    computer_name = models.CharField(max_length=255)  # Προσθέστε αυτό το πεδίο
     expiration_date = models.DateField()
     active = models.BooleanField(default=True)
 
