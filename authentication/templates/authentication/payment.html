@@ -19,14 +19,15 @@
                 {{ form.as_p }}
                 <button class="btn btn-primary shadow" type="submit">Πληρωμή</button>
             </form>
-            <p class="mt-3">Ή χρησιμοποιήστε το παρακάτω κουμπί Stripe για πληρωμή:</p>
-            <div class="stripe-buy-button-container">
+            <p class="mt-3">Ή χρησιμοποιήστε ένα από τα παρακάτω κουμπιά για πληρωμή:</p>
+            <div class="stripe-buy-button-container mb-4">
                 <script async src="https://js.stripe.com/v3/buy-button.js"></script>
                 <stripe-buy-button
                   buy-button-id="buy_btn_1PhUct09cwMpk380v7jglEL0"
                   publishable-key="pk_test_51PMuwq09cwMpk380mLqEO8TRFmPxWbdkH6duCukc2IjEqUdnSCbAVM7EPnrxv7z7gXJOSGfotTkiQseG3tTmSI3t00uOMDJCfL">
                 </stripe-buy-button>
             </div>
+            <div id="paypal-button-container"></div>
         </div>
     </div>
 </div>
@@ -39,4 +40,43 @@
         transform-origin: 0 0;
     }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://www.paypal.com/sdk/js?client-id={{ PAYPAL_CLIENT_ID }}&currency=USD"></script>
+<script>
+    paypal.Buttons({
+        createOrder: function(data, actions) {
+            return actions.order.create({
+                purchase_units: [{
+                    amount: {
+                        value: '10.00' // το ποσό πληρωμής
+                    }
+                }]
+            });
+        },
+        onApprove: function(data, actions) {
+            return actions.order.capture().then(function(details) {
+                alert('Transaction completed by ' + details.payer.name.given_name);
+                // Κάντε μια αίτηση POST στον server σας για να αποθηκεύσετε τις πληροφορίες πληρωμής
+                fetch('{% url "execute_payment" %}', {
+                    method: 'post',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        orderID: data.orderID
+                    })
+                }).then(response => {
+                    if (response.ok) {
+                        window.location.href = '{% url "success" %}';
+                    } else {
+                        window.location.href = '{% url "error" %}';
+                    }
+                });
+            });
+        }
+    }).render('#paypal-button-container');
+</script>
 {% endblock %}

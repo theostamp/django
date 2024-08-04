@@ -27,6 +27,7 @@ urlpatterns = [
     path('payment/create/', views.create_payment, name='create_payment'),
     path('payment/execute/', views.execute_payment, name='execute_payment'),
     path('payment/cancel/', views.payment_cancelled, name='payment_cancelled'),
+    # path('payment/', views.payment, name='payment'),
 ]
 
 

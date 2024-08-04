@@ -26,10 +26,27 @@ from .forms import (
     TenantURLForm, SubscriptionPlanForm, PaymentForm
 )
 from .models import Tenant, Domain, Subscription, CustomUser, License
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def payment_view(request):
+    context = {
+        'PAYPAL_CLIENT_ID': settings.PAYPAL_CLIENT_ID
+    }
+    return render(request, 'payment/payment.html', context)
+
 
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 logger = logging.getLogger('django')
 User = get_user_model()
+
+
+paypalrestsdk.configure({
+    "mode": settings.PAYPAL_MODE,  # sandbox ή live
+    "client_id": settings.PAYPAL_CLIENT_ID,
+    "client_secret": settings.PAYPAL_CLIENT_SECRET
+})
+
 
 @ensure_csrf_cookie
 def get_csrf_token(request):
@@ -385,11 +402,7 @@ def stripe_webhook(request):
 
 
 
-paypalrestsdk.configure({
-    "mode": settings.PAYPAL_MODE,  # sandbox ή live
-    "client_id": settings.PAYPAL_CLIENT_ID,
-    "client_secret": settings.PAYPAL_CLIENT_SECRET
-})
+
 
 def create_payment(request):
     if request.method == "POST":
