@@ -57,7 +57,7 @@ class License(models.Model):
 class TemporaryKey(models.Model):
     tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)
     customer_id = models.CharField(max_length=255)
-    key = models.CharField(maxlength=8)
+    key = models.CharField(max_length=8)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
 

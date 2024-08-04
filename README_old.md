@@ -11,7 +11,7 @@ git reset --hard origin/main
 git init
 
 git add .
-git commit -m "ensomatosi 4"
+git commit -m "ensomatosi 5"
 git branch -M main
 git remote add origin https://github.com/theostamp/django.git
 git push -u origin main 
