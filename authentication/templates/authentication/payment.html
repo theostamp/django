@@ -17,14 +17,33 @@
             <div id="paypal-button-container"></div>
             <!-- Προσθήκη εκτύπωσης για το PAYPAL_CLIENT_ID -->
             <p>PayPal Client ID: {{ PAYPAL_CLIENT_ID }}</p>
+            <!-- Προσθήκη δοκιμαστικού κουμπιού -->
+            <button id="test-button" class="btn btn-secondary mt-3">Δοκιμαστικό Κουμπί</button>
         </div>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Document loaded');
+        var testButton = document.getElementById('test-button');
+        if (testButton) {
+            console.log('Test button found');
+            testButton.addEventListener('click', function() {
+                alert('Το δοκιμαστικό κουμπί πατήθηκε!');
+            });
+        } else {
+            console.error('Test button not found');
+        }
+    });
+</script>
+
 <script src="https://www.paypal.com/sdk/js?client-id={{ PAYPAL_CLIENT_ID }}&currency=USD"></script>
 <script>
+    console.log('Loading PayPal script with Client ID:', '{{ PAYPAL_CLIENT_ID }}');
+
     paypal.Buttons({
         createOrder: function(data, actions) {
             return actions.order.create({
