@@ -26,23 +26,28 @@ class Tenant(TenantMixin):
 class Domain(DomainMixin):
     tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)
 
-class Subscription(models.Model):
-    SUBSCRIPTION_TYPES = (
-        ('trial', 'One Month Trial'),
-        ('basic', 'Basic'),
-        ('premium', 'Premium'),
-        ('enterprise', 'Enterprise'),
-    )
 
+
+
+# models.py
+from django.db import models
+
+class Subscription(models.Model):
     tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)
-    start_date = models.DateField()
-    end_date = models.DateField()
-    subscription_type = models.CharField(max_length=100, choices=SUBSCRIPTION_TYPES)
-    price = models.DecimalField(max_digits=6, decimal_places=2, default=0.0)
+    subscription_type = models.CharField(max_length=50)
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
     active = models.BooleanField(default=False)
+    temporary_key = models.CharField(max_length=8, blank=True, null=True)  # Προσθήκη του πεδίου temporary_key
 
     def __str__(self):
-        return f"Subscription for {self.tenant.name} [{self.subscription_type}]"
+        return f'{self.tenant.name} - {self.subscription_type}'
+
+
+
+
+
 
 class License(models.Model):
     tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)
