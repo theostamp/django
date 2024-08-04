@@ -17,6 +17,7 @@ import stripe
 import uuid
 import random
 import string
+import paypalrestsdk
 
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 
@@ -381,3 +382,59 @@ def stripe_webhook(request):
         print('Unhandled event type {}'.format(event['type']))
 
     return HttpResponse(status=200)
+
+
+
+paypalrestsdk.configure({
+    "mode": settings.PAYPAL_MODE,  # sandbox ή live
+    "client_id": settings.PAYPAL_CLIENT_ID,
+    "client_secret": settings.PAYPAL_CLIENT_SECRET
+})
+
+def create_payment(request):
+    if request.method == "POST":
+        payment = paypalrestsdk.Payment({
+            "intent": "sale",
+            "payer": {
+                "payment_method": "paypal"},
+            "redirect_urls": {
+                "return_url": "http://localhost:8000/payment/execute",
+                "cancel_url": "http://localhost:8000/payment/cancel"},
+            "transactions": [{
+                "item_list": {
+                    "items": [{
+                        "name": "subscription",
+                        "sku": "001",
+                        "price": "10.00",
+                        "currency": "USD",
+                        "quantity": 1}]},
+                "amount": {
+                    "total": "10.00",
+                    "currency": "USD"},
+                "description": "Subscription payment."}]})
+
+        if payment.create():
+            for link in payment.links:
+                if link.rel == "approval_url":
+                    approval_url = str(link.href)
+                    return redirect(approval_url)
+        else:
+            return render(request, 'payment/error.html', {'error': payment.error})
+    return render(request, 'payment/create.html')
+
+@csrf_exempt
+def execute_payment(request):
+    payment_id = request.GET.get('paymentId')
+    payer_id = request.GET.get('PayerID')
+
+    payment = paypalrestsdk.Payment.find(payment_id)
+
+    if payment.execute({"payer_id": payer_id}):
+        return render(request, 'payment/success.html')
+    else:
+        return render(request, 'payment/error.html', {'error': payment.error})
+
+def payment_cancelled(request):
+    return render(request, 'payment/cancelled.html')
+
+

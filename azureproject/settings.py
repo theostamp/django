@@ -161,3 +161,9 @@ CELERY_TASK_SERIALIZER = 'json'
 
 STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY')
 STRIPE_PUBLIC_KEY = config('STRIPE_PUBLIC_KEY')
+
+import paypalrestsdk
+
+PAYPAL_MODE = 'sandbox'  # live για παραγωγή
+PAYPAL_CLIENT_ID = config('PAYPAL_CLIENT_ID')
+PAYPAL_CLIENT_SECRET = config('PAYPAL_CLIENT_SECRET')

@@ -24,6 +24,9 @@ urlpatterns = [
     path('generate_temporary_key/', views.generate_temporary_key, name='generate_temporary_key'),
     path('activate_license/', views.activate_license, name='activate_license'),
     path('check_license/', views.check_license, name='check_license'),
+    path('payment/create/', views.create_payment, name='create_payment'),
+    path('payment/execute/', views.execute_payment, name='execute_payment'),
+    path('payment/cancel/', views.payment_cancelled, name='payment_cancelled'),
 ]
 
 
