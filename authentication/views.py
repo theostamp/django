@@ -1,58 +1,34 @@
-# authentication/views.py
-
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
-from .forms import CustomUserCreationForm, CustomUserLoginForm, TenantURLForm, SubscriptionPlanForm, PaymentForm
 from django.contrib import messages
 from django.db import IntegrityError
-from authentication.models import Tenant, Domain, Subscription
-from .models import CustomUser
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse, HttpResponse
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.contrib.auth import get_user_model
 from django_tenants.utils import schema_context
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.urls import reverse_lazy
-import os
-import logging
-from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils import timezone
 from datetime import timedelta
-import stripe
-from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
-from django.http import JsonResponse
-from django.views.decorators.csrf import ensure_csrf_cookie
-from django.contrib.auth.decorators import login_required
-import json
-from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
+import os
+import logging
 import stripe
 import uuid
-from .models import Tenant  # Υποθέτοντας ότι το μοντέλο του tenant είναι Tenant
-from .forms import SubscriptionForm
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
-from .models import Tenant, Subscription, License
-from django.utils import timezone
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-
 import random
 import string
 
+from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 
-
-
-
-
+from .forms import (
+    CustomUserCreationForm, CustomUserLoginForm, 
+    TenantURLForm, SubscriptionPlanForm, PaymentForm
+)
+from .models import Tenant, Domain, Subscription, CustomUser, License
 
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
-
 logger = logging.getLogger('django')
-
 User = get_user_model()
-
 
 @ensure_csrf_cookie
 def get_csrf_token(request):
@@ -91,9 +67,6 @@ def create_tenant(user, plan):
             Domain.objects.create(domain=domain_name, tenant=tenant, is_primary=True)
         except IntegrityError:
             return None, "Προέκυψε σφάλμα κατά τη δημιουργία του tenant."
-
-    with schema_context(tenant.schema_name):
-        pass
 
     return tenant, None
 
@@ -262,99 +235,6 @@ def profile_view(request):
     current_user = request.user
     tenant = None
     subscription = None
-
-    try:
-        tenant = Tenant.objects.get(schema_name=current_user.username)
-        subscription = Subscription.objects.get(tenant=tenant)
-    except Tenant.DoesNotExist:
-        pass
-    except Subscription.DoesNotExist:
-        pass
-
-    context = {
-        'current_user': current_user,
-        'tenant': tenant,
-        'subscription': subscription,
-    }
-
-    return render(request, 'authentication/profile.html', context)
-
-class CustomPasswordChangeView(PasswordChangeView):
-    template_name = 'authentication/password_change.html'
-    success_url = reverse_lazy('password_change_done')
-
-class CustomPasswordChangeDoneView(PasswordChangeDoneView):
-    template_name = 'authentication/password_change_done.html'
-
-def features(request):
-    return render(request, 'authentication/features.html')
-
-def integrations(request):
-    return render(request, 'authentication/integrations.html')
-
-def pricing(request):
-    return render(request, 'authentication/pricing.html')
-
-def contacts(request):
-    return render(request, 'authentication/contacts.html')
-
-def index(request):
-    return render(request, 'authentication/index.html')
-
-
-
-@csrf_exempt
-def stripe_webhook(request):
-    payload = request.body
-    sig_header = request.META['HTTP_STRIPE_SIGNATURE']
-    endpoint_secret = 'your_webhook_secret'
-
-    try:
-        event = stripe.Webhook.construct_event(
-            payload, sig_header, endpoint_secret
-        )
-    except ValueError as e:
-        # Invalid payload
-        return HttpResponse(status=400)
-    except stripe.error.SignatureVerificationError as e:
-        # Invalid signature
-        return HttpResponse(status=400)
-
-    # Handle the event
-    if event['type'] == 'payment_intent.succeeded':
-        payment_intent = event['data']['object']
-        customer_id = payment_intent['customer']
-
-        # Generate temporary key
-        temporary_key = str(uuid.uuid4())[:8]
-
-        # Save the temporary key in the database, associated with the customer_id
-        # Assuming you have a model to store the temporary keys
-        # Example:
-        # TemporaryKey.objects.create(customer_id=customer_id, key=temporary_key)
-
-        print(f'Successful payment! Temporary key generated: {temporary_key}')
-        # Send the temporary key to the user by email or other means
-
-    elif event['type'] == 'payment_method.attached':
-        payment_method = event['data']['object']
-        print('PaymentMethod was attached to a Customer!')
-
-    # ... handle other event types
-    else:
-        print('Unhandled event type {}'.format(event['type']))
-
-    return HttpResponse(status=200)
-
-
-def generate_temporary_key():
-    return ''.join(random.choices(string.digits, k=8))
-
-@login_required
-def profile_view(request):
-    current_user = request.user
-    tenant = None
-    subscription = None
     temporary_key = None
 
     try:
@@ -423,3 +303,71 @@ def check_license(request):
             return JsonResponse({"status": "expired"})
     except License.DoesNotExist:
         return JsonResponse({"status": "no_license"})
+
+def generate_temporary_key():
+    return ''.join(random.choices(string.digits, k=8))
+
+class CustomPasswordChangeView(PasswordChangeView):
+    template_name = 'authentication/password_change.html'
+    success_url = reverse_lazy('password_change_done')
+
+class CustomPasswordChangeDoneView(PasswordChangeDoneView):
+    template_name = 'authentication/password_change_done.html'
+
+def features(request):
+    return render(request, 'authentication/features.html')
+
+def integrations(request):
+    return render(request, 'authentication/integrations.html')
+
+def pricing(request):
+    return render(request, 'authentication/pricing.html')
+
+def contacts(request):
+    return render(request, 'authentication/contacts.html')
+
+def index(request):
+    return render(request, 'authentication/index.html')
+
+@csrf_exempt
+def stripe_webhook(request):
+    payload = request.body
+    sig_header = request.META['HTTP_STRIPE_SIGNATURE']
+    endpoint_secret = 'your_webhook_secret'
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, endpoint_secret
+        )
+    except ValueError as e:
+        # Invalid payload
+        return HttpResponse(status=400)
+    except stripe.error.SignatureVerificationError as e:
+        # Invalid signature
+        return HttpResponse(status=400)
+
+    # Handle the event
+    if event['type'] == 'payment_intent.succeeded':
+        payment_intent = event['data']['object']
+        customer_id = payment_intent['customer']
+
+        # Generate temporary key
+        temporary_key = str(uuid.uuid4())[:8]
+
+        # Save the temporary key in the database, associated with the customer_id
+        # Assuming you have a model to store the temporary keys
+        # Example:
+        # TemporaryKey.objects.create(customer_id=customer_id, key=temporary_key)
+
+        print(f'Successful payment! Temporary key generated: {temporary_key}')
+        # Send the temporary key to the user by email or other means
+
+    elif event['type'] == 'payment_method.attached':
+        payment_method = event['data']['object']
+        print('PaymentMethod was attached to a Customer!')
+
+    # ... handle other event types
+    else:
+        print('Unhandled event type {}'.format(event['type']))
+
+    return HttpResponse(status=200)

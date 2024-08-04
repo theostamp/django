@@ -2,12 +2,10 @@
 python3 -m pip install -r requirements.txt
 echo "Running migrations..."
 python manage.py makemigrations authentication
-python manage.py makemigrations restaurant_review
-python manage.py makemigrations authentication
+python manage.py makemigrations  tables
 python manage.py makemigrations
 python manage.py migrate authentication --noinput || echo "Migrate authentication failed"
-python manage.py migrate authentication --noinput || echo "Migrate authentication failed"
-python manage.py migrate restaurant_review --noinput || echo "Migrate restaurant_review failed"
+python manage.py migrate tables --noinput || echo "Migrate authentication failed"
 python manage.py migrate_schemas --noinput || echo "Migrate schemas failed"
 python manage.py migrate --noinput || echo "Migrate failed"
 
