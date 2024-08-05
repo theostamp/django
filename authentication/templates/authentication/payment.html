@@ -1,10 +1,14 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ολοκλήρωση Πληρωμής</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800&amp;display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=ABeeZee&amp;display=swap">
     <style>
         body {
             font-family: Tahoma, sans-serif;
@@ -15,29 +19,36 @@
             flex-direction: column;
             min-height: 100vh;
         }
+
         .content {
             flex: 1;
             padding: 20px;
         }
+
         footer {
             background-color: #f8f9fa;
             padding: 20px 0;
         }
+
         footer p, footer ul {
             margin: 0;
         }
+
         footer ul {
             padding-left: 0;
             list-style: none;
         }
+
         footer ul li {
             display: inline;
             margin-right: 15px;
         }
+
         footer ul li a {
             color: #6c757d;
             text-decoration: none;
         }
+
         footer ul li a:hover {
             text-decoration: underline;
         }
@@ -46,20 +57,20 @@
 <body>
     <nav class="navbar navbar-expand-md fixed-top navbar-shrink py-3" id="mainNav">
         <div class="container">
-            <a class="navbar-brand d-flex align-items-center" href="#"><span>DignSight</span></a>
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'index' %}"><span>DignSight</span></a>
             <button data-toggle="collapse" class="navbar-toggler" data-target="#navcol-1">
                 <span class="visually-hidden">Toggle navigation</span>
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navcol-1">
                 <ul class="navbar-nav mx-auto">
-                    <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Features</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Integrations</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Pricing</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Contacts</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'index' %}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'features' %}">Features</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'integrations' %}">Integrations</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'pricing' %}">Pricing</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'contacts' %}">Contacts</a></li>
                 </ul>
-                <a class="btn btn-primary shadow" role="button" href="#">Sign up</a>
+                <a class="btn btn-primary shadow" role="button" href="{% url 'register' %}">Sign up</a>
             </div>
         </div>
     </nav>
@@ -67,14 +78,14 @@
         <div class="container py-4 py-md-5 my-5">
             <div class="row">
                 <div class="col-md-3 text-center">
-                    <img class="img-fluid" src="https://via.placeholder.com/150" style="max-width: 100%; height: auto;">
+                    <img class="img-fluid" src="{% static 'img/illustrations/payment.svg' %}" style="max-width: 100%; height: auto;">
                 </div>
                 <div class="col-md-9 text-center text-md-start">
                     <h2 class="display-6 fw-bold mb-5">
                         <span class="underline pb-1"><strong>Ολοκλήρωση Πληρωμής</strong></span>
                     </h2>
                     <div id="paypal-button-container"></div>
-                    <p>PayPal Client ID: AcbMn8UsnZKDaxyFilw8t_fibfL5QiNJQ0LW4p85cJQuyiXBSAUZwJsvk4P6Ojd3kMc8cI_l5hxVb0Q2</p>
+                    <p>PayPal Client ID: {{ PAYPAL_CLIENT_ID }}</p>
                     <button id="test-button" class="btn btn-secondary mt-3">Δοκιμαστικό Κουμπί</button>
                 </div>
             </div>
@@ -151,7 +162,7 @@
 
             // Load PayPal SDK
             var script = document.createElement('script');
-            script.src = "https://www.paypal.com/sdk/js?client-id=AcbMn8UsnZKDaxyFilw8t_fibfL5QiNJQ0LW4p85cJQuyiXBSAUZwJsvk4P6Ojd3kMc8cI_l5hxVb0Q2&currency=USD";
+            script.src = "https://www.paypal.com/sdk/js?client-id={{ PAYPAL_CLIENT_ID }}&currency=USD";
             script.onload = function() {
                 console.log("PayPal SDK script loaded!");
 
@@ -169,7 +180,7 @@
                         onApprove: function(data, actions) {
                             return actions.order.capture().then(function(details) {
                                 alert('Transaction completed by ' + details.payer.name.given_name);
-                                fetch('/execute_payment/', {
+                                fetch('{% url "execute_payment" %}', {
                                     method: 'post',
                                     headers: {
                                         'Content-Type': 'application/json',
@@ -180,9 +191,9 @@
                                     })
                                 }).then(response => {
                                     if (response.ok) {
-                                        window.location.href = 'payment/success/';
+                                        window.location.href = '{% url "success" %}';
                                     } else {
-                                        window.location.href = 'payment/error/';
+                                        window.location.href = '{% url "error" %}';
                                     }
                                 });
                             });
@@ -200,3 +211,4 @@
     </script>
 </body>
 </html>
+
