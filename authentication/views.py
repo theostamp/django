@@ -457,3 +457,9 @@ def stripe_webhook(request):
         print('Unhandled event type {}'.format(event['type']))
 
     return HttpResponse(status=200)
+
+from django.shortcuts import render
+
+# Προσθήκη αυτού του view για να χειριστείτε τα σφάλματα πληρωμής
+def payment_error(request):
+    return render(request, 'payment/error.html')

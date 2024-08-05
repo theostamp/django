@@ -1,5 +1,3 @@
-# authentication/urls.py
-
 from django.urls import path, include
 from . import views
 
@@ -27,4 +25,5 @@ urlpatterns = [
     path('payment/create/', views.create_payment, name='create_payment'),
     path('payment/execute/', views.execute_payment, name='execute_payment'),
     path('payment/cancel/', views.payment_cancelled, name='payment_cancelled'),
+    path('payment/error/', views.payment_error, name='error'),  # Προσθήκη αυτού του URL pattern
 ]
