@@ -44,11 +44,14 @@ def get_csrf_token(request):
     logger.debug("Απόκτηση CSRF Token")
     return JsonResponse({'csrfToken': request.META.get('CSRF_COOKIE')})
 
+
+
 @login_required
 def payment_view(request):
     paypal_client_id = settings.PAYPAL_CLIENT_ID
     stripe_public_key = settings.STRIPE_PUBLIC_KEY
 
+    # Εκτυπώσεις για έλεγχο
     logger.debug(f"PayPal Client ID: {paypal_client_id}")
     print(f"PayPal Client ID: {paypal_client_id}")  # Εκτύπωση στο CLI
     logger.debug(f"Stripe Public Key: {stripe_public_key}")
@@ -60,6 +63,9 @@ def payment_view(request):
         'form': PaymentForm(),
     }
     return render(request, 'payment/payment.html', context)
+
+
+
 
 def create_payment(request):
     if request.method == "POST":
@@ -183,6 +189,8 @@ def create_user(username, password):
     user = User.objects.create_user(username=username, password=password)
     return user, None
 
+
+
 def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
@@ -218,13 +226,14 @@ def register(request):
 
             login(request, user)
             messages.success(request, 'Ο λογαριασμός δημιουργήθηκε επιτυχώς! Παρακαλώ ολοκληρώστε την πληρωμή σας.')
-            return redirect('payment')
+            return redirect('process_payment')  # Ανακατεύθυνση στη σωστή σελίδα πληρωμής
         else:
             messages.error(request, 'Σφάλμα κατά την εγγραφή. Παρακαλώ ελέγξτε το φόρμα.')
     else:
         form = CustomUserCreationForm()
 
     return render(request, 'authentication/register.html', {'form': form})
+
 
 @login_required
 def process_payment(request):
@@ -240,6 +249,7 @@ def process_payment(request):
                     description='Example charge',
                     source=stripe_token,
                 )
+                # Εύρεση της συνδρομής και ενεργοποίησή της
                 tenant = Tenant.objects.get(schema_name=request.user.username)
                 subscription = Subscription.objects.get(tenant=tenant)
                 subscription.active = True
@@ -255,6 +265,7 @@ def process_payment(request):
         form = PaymentForm()
 
     return render(request, 'authentication/payment.html', {'form': form, 'stripe_public_key': settings.STRIPE_PUBLIC_KEY})
+
 
 @login_required
 def select_subscription(request):
