@@ -5,6 +5,7 @@ from . import views
 
 from django.urls import path
 from . import views
+from authentication.views import index, payment_error
 
 urlpatterns = [
     path('signup/', views.register, name='register'),
@@ -30,5 +31,5 @@ urlpatterns = [
     path('payment/create/', views.create_payment, name='create_payment'),
     path('payment/execute/', views.execute_payment, name='execute_payment'),
     path('payment/cancel/', views.payment_cancelled, name='payment_cancelled'),
-    path('payment/error/', views.payment_error, name='error'),  # Προσθήκη του URL pattern για το error
+    path('error/', payment_error, name='payment_error'),  # Προσθέστε αυτή τη γραμμή
 ]
