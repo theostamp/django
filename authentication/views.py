@@ -25,17 +25,19 @@ from decouple import config
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from paypal.standard.forms import PayPalPaymentsForm
+from django.shortcuts import render, redirect
+from django.urls import reverse
+from paypal.standard.forms import PayPalPaymentsForm
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
+from django.contrib.auth.decorators import login_required
+from django.conf import settings
+import logging
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
+# Άλλα imports...
 
 logger = logging.getLogger('django')
-stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
-paypalrestsdk.configure({
-    "mode": settings.PAYPAL_MODE,  # sandbox ή live
-    "client_id": settings.PAYPAL_CLIENT_ID,
-    "client_secret": settings.PAYPAL_CLIENT_SECRET
-})
-
-User = get_user_model()
 
 @ensure_csrf_cookie
 def get_csrf_token(request):
@@ -47,7 +49,6 @@ def payment_view(request):
     paypal_client_id = settings.PAYPAL_CLIENT_ID
     stripe_public_key = settings.STRIPE_PUBLIC_KEY
 
-    # Εκτυπώσεις για έλεγχο
     logger.debug(f"PayPal Client ID: {paypal_client_id}")
     print(f"PayPal Client ID: {paypal_client_id}")  # Εκτύπωση στο CLI
     logger.debug(f"Stripe Public Key: {stripe_public_key}")
@@ -59,10 +60,6 @@ def payment_view(request):
         'form': PaymentForm(),
     }
     return render(request, 'payment/payment.html', context)
-
-# Ο υπόλοιπος κώδικας παραμένει ως έχει
-
-
 
 def create_payment(request):
     if request.method == "POST":
@@ -94,9 +91,6 @@ def create_payment(request):
         else:
             return render(request, 'payment/error.html', {'error': payment.error})
     return render(request, 'payment/create.html')
-
-
-
 
 @csrf_exempt
 def execute_payment(request):
@@ -207,13 +201,12 @@ def register(request):
                 messages.error(request, tenant_error)
                 return render(request, 'authentication/register.html', {'form': form})
 
-            # Δημιουργία συνδρομής με βάση την επιλογή του χρήστη
             if plan == 'trial':
                 end_date = timezone.now() + timedelta(days=30)
                 price = 0
             else:
-                end_date = timezone.now() + timedelta(days=365)  # Παράδειγμα για ετήσια συνδρομή
-                price = 100  # Τιμή για την ετήσια συνδρομή (παράδειγμα)
+                end_date = timezone.now() + timedelta(days=365)
+                price = 100
 
             Subscription.objects.create(
                 tenant=tenant,
@@ -247,7 +240,6 @@ def process_payment(request):
                     description='Example charge',
                     source=stripe_token,
                 )
-                # Εύρεση της συνδρομής και ενεργοποίησή της
                 tenant = Tenant.objects.get(schema_name=request.user.username)
                 subscription = Subscription.objects.get(tenant=tenant)
                 subscription.active = True
@@ -355,13 +347,11 @@ def activate_license(request):
     computer_name = request.POST.get('computer_name')
 
     try:
-        # Βρείτε την συνδρομή με το προσωρινό κλειδί
         subscription = Subscription.objects.get(temporary_key=temporary_key)
         tenant = subscription.tenant
 
-        # Δημιουργία μόνιμου κλειδιού
         permanent_key = str(uuid.uuid4())
-        expiration_date = timezone.now().date() + timezone.timedelta(days=30)  # Παράδειγμα για 30 μέρες
+        expiration_date = timezone.now().date() + timezone.timedelta(days=30)
 
         license, created = License.objects.get_or_create(tenant=tenant)
         license.license_key = permanent_key
@@ -428,51 +418,34 @@ def stripe_webhook(request):
             payload, sig_header, endpoint_secret
         )
     except ValueError as e:
-        # Invalid payload
         return HttpResponse(status=400)
     except stripe.error.SignatureVerificationError as e:
-        # Invalid signature
         return HttpResponse(status=400)
 
-    # Handle the event
     if event['type'] == 'payment_intent.succeeded':
         payment_intent = event['data']['object']
         customer_id = payment_intent['customer']
 
-        # Generate temporary key
         temporary_key = str(uuid.uuid4())[:8]
-
-        # Save the temporary key in the database, associated with the customer_id
-        # Assuming you have a model to store the temporary keys
-        # Example:
-        # TemporaryKey.objects.create(customer_id=customer_id, key=temporary_key)
-
-        print(f'Successful payment! Temporary key generated: {temporary_key}')
-        # Send the temporary key to the user by email or other means
 
     elif event['type'] == 'payment_method.attached':
         payment_method = event['data']['object']
         print('PaymentMethod was attached to a Customer!')
 
-    # ... handle other event types
     else:
         print('Unhandled event type {}'.format(event['type']))
 
     return HttpResponse(status=200)
 
-from django.shortcuts import render
-
-# Προσθήκη αυτού του view για να χειριστείτε τα σφάλματα πληρωμής
 def payment_error(request):
     return render(request, 'payment/error.html')
 
-
- def paypal_payment(request):
+def paypal_payment(request):
     paypal_dict = {
         "business": settings.PAYPAL_RECEIVER_EMAIL,
-        "amount": "10.00",  # Το ποσό της πληρωμής
+        "amount": "10.00",
         "item_name": "Subscription",
-        "invoice": "unique-invoice-id",  # Αναγνωριστικό τιμολογίου
+        "invoice": "unique-invoice-id",
         "notify_url": request.build_absolute_uri(reverse('paypal-ipn')),
         "return_url": request.build_absolute_uri(reverse('payment_done')),
         "cancel_return": request.build_absolute_uri(reverse('payment_cancelled')),
@@ -486,4 +459,4 @@ def payment_done(request):
     return render(request, 'payment/payment_done.html')
 
 def payment_cancelled(request):
-    return render(request, 'payment/payment_cancelled.html')   
+    return render(request, 'payment/payment_cancelled.html')
