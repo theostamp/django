@@ -226,14 +226,13 @@ def register(request):
 
             login(request, user)
             messages.success(request, 'Ο λογαριασμός δημιουργήθηκε επιτυχώς! Παρακαλώ ολοκληρώστε την πληρωμή σας.')
-            return redirect('process_payment')  # Ανακατεύθυνση στη σωστή σελίδα πληρωμής
+            return redirect('payment')  # Αντικατάσταση process_payment με payment
         else:
             messages.error(request, 'Σφάλμα κατά την εγγραφή. Παρακαλώ ελέγξτε το φόρμα.')
     else:
         form = CustomUserCreationForm()
 
     return render(request, 'authentication/register.html', {'form': form})
-
 
 @login_required
 def process_payment(request):
