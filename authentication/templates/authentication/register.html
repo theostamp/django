@@ -103,7 +103,7 @@
                         <h2 class="display-6 fw-bold mb-5">
                             <span class="underline pb-1"><strong>Εγγραφή</strong></span>
                         </h2>
-                        <form method="post">
+                        <form method="post" action="{% url 'process_payment' %}">
                             {% csrf_token %}
                             {{ form.non_field_errors }}
                             <div class="form-group">
@@ -128,6 +128,8 @@
                             </div>
                             <button class="btn btn-primary shadow" type="submit">Εγγραφή</button>
                         </form>
+                        
+
                         {% if messages %}
                         <ul class="messages">
                             {% for message in messages %}

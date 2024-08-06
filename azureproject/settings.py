@@ -2,13 +2,33 @@ import os
 from pathlib import Path
 from decouple import config
 
+# settings.py
+
+import os
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# URL to use when referring to static files located in STATIC_ROOT.
+# Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
-# The absolute path to the directory where collectstatic will collect static files for deployment.
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# Template settings
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+
 
 # Additional locations the staticfiles app will traverse if the FileSystemFinder finder is enabled.
 STATICFILES_DIRS = [
@@ -89,22 +109,6 @@ DATABASE_ROUTERS = (
 )
 
 AUTH_USER_MODEL = 'authentication.CustomUser'
-
-TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-            ],
-        },
-    },
-]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
