@@ -19,3 +19,4 @@ celery
 python-decouple
 stripe
 paypalrestsdk
+django-paypal

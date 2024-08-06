@@ -1,4 +1,5 @@
-from django.urls import path, include
+# authentication/urls.py
+from django.urls import path
 from . import views
 
 urlpatterns = [
@@ -26,4 +27,7 @@ urlpatterns = [
     path('payment/execute/', views.execute_payment, name='execute_payment'),
     path('payment/cancel/', views.payment_cancelled, name='payment_cancelled'),
     path('payment/error/', views.payment_error, name='error'),  # Προσθήκη του URL pattern για το error
+    path('paypal-payment/', views.paypal_payment, name='paypal_payment'),
+    path('payment-done/', views.payment_done, name='payment_done'),
+    path('payment-cancelled/', views.payment_cancelled, name='payment_cancelled'),
 ]

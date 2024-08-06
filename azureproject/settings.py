@@ -32,6 +32,7 @@ ALLOWED_HOSTS = ['localhost', '*', '[::1]', 'dign-fkh0cyakasa6cqf4.eastus-01.azu
 SHARED_APPS = [
     'django_tenants',
     # 'tenants.apps.TenantsConfig',
+    'paypal.standard.ipn',
     'authentication.apps.AuthenticationConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -166,3 +167,7 @@ STRIPE_PUBLIC_KEY = config('STRIPE_PUBLIC_KEY')
 PAYPAL_MODE = 'sandbox'  # live για παραγωγή
 PAYPAL_CLIENT_ID = config('PAYPAL_CLIENT_ID')
 PAYPAL_CLIENT_SECRET = config('PAYPAL_CLIENT_SECRET')
+
+# settings.py
+PAYPAL_RECEIVER_EMAIL = 'theostam1966@gmail.com'
+PAYPAL_TEST = True  # Ορίστε το σε False για την παραγωγή

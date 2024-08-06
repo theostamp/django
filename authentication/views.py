@@ -22,7 +22,9 @@ import uuid
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 from django.urls import reverse_lazy
 from decouple import config
-
+from django.shortcuts import render, redirect
+from django.urls import reverse
+from paypal.standard.forms import PayPalPaymentsForm
 
 
 logger = logging.getLogger('django')
@@ -463,3 +465,25 @@ from django.shortcuts import render
 # Προσθήκη αυτού του view για να χειριστείτε τα σφάλματα πληρωμής
 def payment_error(request):
     return render(request, 'payment/error.html')
+
+
+ def paypal_payment(request):
+    paypal_dict = {
+        "business": settings.PAYPAL_RECEIVER_EMAIL,
+        "amount": "10.00",  # Το ποσό της πληρωμής
+        "item_name": "Subscription",
+        "invoice": "unique-invoice-id",  # Αναγνωριστικό τιμολογίου
+        "notify_url": request.build_absolute_uri(reverse('paypal-ipn')),
+        "return_url": request.build_absolute_uri(reverse('payment_done')),
+        "cancel_return": request.build_absolute_uri(reverse('payment_cancelled')),
+    }
+
+    form = PayPalPaymentsForm(initial=paypal_dict)
+    context = {"form": form}
+    return render(request, "payment/paypal_payment.html", context)
+
+def payment_done(request):
+    return render(request, 'payment/payment_done.html')
+
+def payment_cancelled(request):
+    return render(request, 'payment/payment_cancelled.html')   
