@@ -24,6 +24,7 @@
 {% else %}
     <p>Δεν βρέθηκαν στοιχεία συνδρομής.</p>
 {% endif %}
+
 <h1>Profile for {{ current_user.username }}</h1>
 <p>Subscription Type: {{ subscription.subscription_type }}</p>
 <p>Temporary Key: {{ temporary_key }}</p>
@@ -38,15 +39,14 @@
     <button type="submit">Activate License</button>
 </form>
 
+<!-- Προσθήκη κουμπιού πληρωμής -->
+<a href="{% url 'payment_view' %}" class="btn btn-primary mt-3">Ολοκλήρωση Πληρωμής</a>
 
-
-
-
-<a href="{% url 'password_change' %}" class="btn btn-primary">Αλλαγή Κωδικού Πρόσβασης</a>
+<a href="{% url 'password_change' %}" class="btn btn-primary mt-3">Αλλαγή Κωδικού Πρόσβασης</a>
 {% endblock %}
 
-
-<style>body {
+<style>
+body {
     font-family: Tahoma, sans-serif;
     background-color: #f4f4f4;
     margin: 0;

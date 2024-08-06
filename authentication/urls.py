@@ -6,6 +6,9 @@ from . import views
 from django.urls import path
 from . import views
 from authentication.views import index, payment_error
+# authentication/urls.py
+from django.urls import path
+from . import views
 
 urlpatterns = [
     path('signup/', views.register, name='register'),
@@ -20,7 +23,7 @@ urlpatterns = [
     path('contacts/', views.contacts, name='contacts'),
     path('password_reset/', include('django.contrib.auth.urls')),
     path('get-csrf-token/', views.get_csrf_token, name='get_csrf_token'),
-    path('payment/', views.payment_view, name='payment'),  # Αντικατάσταση process_payment με payment_view
+    path('payment/', views.payment_view, name='payment_view'),
     path('profile/', views.profile_view, name='profile'),
     path('password_change/', views.CustomPasswordChangeView.as_view(), name='password_change'),
     path('password_change_done/', views.CustomPasswordChangeDoneView.as_view(), name='password_change_done'),
@@ -31,5 +34,9 @@ urlpatterns = [
     path('payment/create/', views.create_payment, name='create_payment'),
     path('payment/execute/', views.execute_payment, name='execute_payment'),
     path('payment/cancel/', views.payment_cancelled, name='payment_cancelled'),
-    path('error/', payment_error, name='payment_error'),  # Προσθέστε αυτή τη γραμμή
+    path('payment/error/', views.payment_error, name='error'),
 ]
+
+
+
+
