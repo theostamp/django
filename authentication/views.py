@@ -55,12 +55,15 @@ def payment_view(request):
         "invoice": "unique-invoice-id",  # Αναγνωριστικό συναλλαγής
         "notify_url": request.build_absolute_uri(reverse('paypal-ipn')),
         "return_url": request.build_absolute_uri(reverse('payment_done')),
-        "cancel_return": request.build_absolute_uri(reverse('payment_canceled')),  # Διορθώθηκε εδώ
+        "cancel_return": request.build_absolute_uri(reverse('payment_cancelled')),
     }
 
     form = PayPalPaymentsForm(initial=paypal_dict)
     context = {"form": form}
     return render(request, "payment/payment.html", context)
+
+
+
 
 def payment_done(request):
     return render(request, "payment/done.html")
@@ -193,7 +196,6 @@ def create_user(username, password):
     return user, None
 
 
-
 def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
@@ -229,13 +231,15 @@ def register(request):
 
             login(request, user)
             messages.success(request, 'Ο λογαριασμός δημιουργήθηκε επιτυχώς! Παρακαλώ ολοκληρώστε την πληρωμή σας.')
-            return redirect('payment')  # Αντικατάσταση process_payment με payment
+            return redirect('payment')  # Ανακατεύθυνση στη σωστή σελίδα πληρωμής
         else:
             messages.error(request, 'Σφάλμα κατά την εγγραφή. Παρακαλώ ελέγξτε το φόρμα.')
     else:
         form = CustomUserCreationForm()
 
     return render(request, 'authentication/register.html', {'form': form})
+
+
 
 @login_required
 def process_payment(request):
