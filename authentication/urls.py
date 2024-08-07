@@ -41,8 +41,9 @@ urlpatterns = [
     path('payment/', views.payment_view, name='payment_view'),
     path('paypal/', include('paypal.standard.ipn.urls')),
     path('payment/done/', views.payment_done, name='payment_done'),
-    path('payment/canceled/', views.payment_canceled, name='payment_canceled'),
+    path('payment/canceled/', views.payment_cancelled, name='payment_canceled'),  # Διορθώθηκε εδώ
     path('payment/error/', views.payment_error, name='payment_error'),
+
 ]
 
 

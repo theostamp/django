@@ -47,7 +47,6 @@ def get_csrf_token(request):
 
 
 @login_required
-@login_required
 def payment_view(request):
     paypal_dict = {
         "business": settings.PAYPAL_RECEIVER_EMAIL,
@@ -56,12 +55,23 @@ def payment_view(request):
         "invoice": "unique-invoice-id",  # Αναγνωριστικό συναλλαγής
         "notify_url": request.build_absolute_uri(reverse('paypal-ipn')),
         "return_url": request.build_absolute_uri(reverse('payment_done')),
-        "cancel_return": request.build_absolute_uri(reverse('payment_canceled')),
+        "cancel_return": request.build_absolute_uri(reverse('payment_canceled')),  # Διορθώθηκε εδώ
     }
 
     form = PayPalPaymentsForm(initial=paypal_dict)
     context = {"form": form}
     return render(request, "payment/payment.html", context)
+
+def payment_done(request):
+    return render(request, "payment/done.html")
+
+def payment_cancelled(request):  # Εδώ ήταν σωστό
+    return render(request, "payment/canceled.html")
+
+def payment_error(request):
+    error_message = request.GET.get('error', 'Unknown error occurred.')
+    context = {"error": error_message}
+    return render(request, "payment/error.html", context)
 
 def create_payment(request):
     if request.method == "POST":
@@ -105,9 +115,6 @@ def execute_payment(request):
         return render(request, 'payment/success.html')
     else:
         return render(request, 'payment/error.html', {'error': payment.error})
-
-def payment_cancelled(request):
-    return render(request, 'payment/cancelled.html')
 
 @login_required
 def user_credits(request):
@@ -443,8 +450,6 @@ def stripe_webhook(request):
 
     return HttpResponse(status=200)
 
-def payment_error(request):
-    return render(request, 'payment/error.html')
 
 def paypal_payment(request):
     paypal_dict = {
@@ -460,9 +465,3 @@ def paypal_payment(request):
     form = PayPalPaymentsForm(initial=paypal_dict)
     context = {"form": form}
     return render(request, "payment/paypal_payment.html", context)
-
-def payment_done(request):
-    return render(request, 'payment/payment_done.html')
-
-def payment_cancelled(request):
-    return render(request, 'payment/payment_cancelled.html')
