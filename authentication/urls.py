@@ -35,6 +35,14 @@ urlpatterns = [
     path('payment/execute/', views.execute_payment, name='execute_payment'),
     path('payment/cancel/', views.payment_cancelled, name='payment_cancelled'),
     path('payment/error/', views.payment_error, name='error'),
+    path('payment/', views.payment_view, name='payment_view'),
+    path('execute_payment/', views.execute_payment, name='execute_payment'),
+    path('error/', views.payment_error, name='error'),
+    path('payment/', views.payment_view, name='payment_view'),
+    path('paypal/', include('paypal.standard.ipn.urls')),
+    path('payment/done/', views.payment_done, name='payment_done'),
+    path('payment/canceled/', views.payment_canceled, name='payment_canceled'),
+    path('payment/error/', views.payment_error, name='payment_error'),
 ]
 
 
