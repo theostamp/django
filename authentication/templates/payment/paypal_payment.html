@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Πληρωμή μέσω PayPal</title>
+    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Ολοκλήρωση Πληρωμής μέσω PayPal</h2>
+        <form method="post" action="{% url 'paypal_payment' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Πληρωμή μέσω PayPal</button>
+        </form>
+    </div>
+</body>
+</html>

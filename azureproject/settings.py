@@ -1,16 +1,26 @@
 import os
 from pathlib import Path
-from decouple import config
+from decouple import config  # Προσθήκη της σωστής εισαγωγής
 
-# settings.py
-
-import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Static files (CSS, JavaScript, Images)
+# URL to use when referring to static files located in STATIC_ROOT.
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+
+# The absolute path to the directory where collectstatic will collect static files for deployment.
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Additional locations the staticfiles app will traverse if the FileSystemFinder finder is enabled.
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+
+# URL to use when referring to media files
+MEDIA_URL = '/media/'
+
+# Absolute filesystem path to the directory that will hold user-uploaded files.
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Template settings
 TEMPLATES = [

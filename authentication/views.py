@@ -34,8 +34,63 @@ from django.conf import settings
 import logging
 from django.contrib.auth import get_user_model
 User = get_user_model()
+from django.shortcuts import render, redirect
+from django.urls import reverse
+from paypalrestsdk import Payment
+from django.conf import settings
+import paypalrestsdk
+import logging
 
-# Άλλα imports...
+paypalrestsdk.configure({
+    "mode": settings.PAYPAL_MODE,  # sandbox ή live
+    "client_id": settings.PAYPAL_CLIENT_ID,
+    "client_secret": settings.PAYPAL_CLIENT_SECRET
+})
+
+logger = logging.getLogger('django')
+
+def paypal_payment(request):
+    if request.method == "POST":
+        payment = paypalrestsdk.Payment({
+            "intent": "sale",
+            "payer": {
+                "payment_method": "paypal"},
+            "redirect_urls": {
+                "return_url": request.build_absolute_uri(reverse('paypal_execute')),
+                "cancel_url": request.build_absolute_uri(reverse('payment_cancelled'))},
+            "transactions": [{
+                "item_list": {
+                    "items": [{
+                        "name": "subscription",
+                        "sku": "001",
+                        "price": "10.00",
+                        "currency": "USD",
+                        "quantity": 1}]},
+                "amount": {
+                    "total": "10.00",
+                    "currency": "USD"},
+                "description": "Subscription payment."}]})
+
+        if payment.create():
+            for link in payment.links:
+                if link.rel == "approval_url":
+                    approval_url = str(link.href)
+                    return redirect(approval_url)
+        else:
+            logger.error(payment.error)
+            return render(request, 'payment/error.html', {'error': payment.error})
+    return render(request, 'payment/paypal_payment.html')
+
+def paypal_execute(request):
+    payment_id = request.GET.get('paymentId')
+    payer_id = request.GET.get('PayerID')
+
+    payment = paypalrestsdk.Payment.find(payment_id)
+
+    if payment.execute({"payer_id": payer_id}):
+        return render(request, 'payment/done.html')
+    else:
+        return render(request, 'payment/error.html', {'error': payment.error})
 
 logger = logging.getLogger('django')
 
@@ -453,19 +508,3 @@ def stripe_webhook(request):
         print('Unhandled event type {}'.format(event['type']))
 
     return HttpResponse(status=200)
-
-
-def paypal_payment(request):
-    paypal_dict = {
-        "business": settings.PAYPAL_RECEIVER_EMAIL,
-        "amount": "10.00",
-        "item_name": "Subscription",
-        "invoice": "unique-invoice-id",
-        "notify_url": request.build_absolute_uri(reverse('paypal-ipn')),
-        "return_url": request.build_absolute_uri(reverse('payment_done')),
-        "cancel_return": request.build_absolute_uri(reverse('payment_cancelled')),
-    }
-
-    form = PayPalPaymentsForm(initial=paypal_dict)
-    context = {"form": form}
-    return render(request, "payment/paypal_payment.html", context)
