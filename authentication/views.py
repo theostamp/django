@@ -44,7 +44,6 @@ from django.conf import settings
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
-
 paypalrestsdk.configure({
     "mode": settings.PAYPAL_MODE,  # sandbox ή live
     "client_id": settings.PAYPAL_CLIENT_ID,
@@ -87,7 +86,6 @@ def paypal_payment(request):
             return render(request, 'payment/error.html', {'error': payment.error})
     return render(request, 'payment/paypal_payment.html')
 
-
 @login_required
 @csrf_exempt
 def paypal_execute(request):
@@ -126,10 +124,6 @@ def paypal_execute(request):
         return render(request, 'payment/success.html')
     else:
         return render(request, 'payment/error.html', {'error': payment.error})
-
-
-
-
 
 @ensure_csrf_cookie
 def get_csrf_token(request):
@@ -282,9 +276,6 @@ def create_user(username, password):
     user = User.objects.create_user(username=username, password=password)
     return user, None
 
-
-
-
 def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
@@ -311,8 +302,6 @@ def register(request):
         form = CustomUserCreationForm()
 
     return render(request, 'authentication/register.html', {'form': form})
-
-
 
 @login_required
 def process_payment(request):
@@ -395,10 +384,6 @@ def login_view(request):
 
     return render(request, 'authentication/login.html', {'form': form})
 
-
-
-
-
 @login_required
 def profile_view(request):
     current_user = request.user
@@ -431,9 +416,6 @@ def profile_view(request):
 
     return render(request, 'authentication/profile.html', context)
 
-import logging
-
-logger = logging.getLogger(__name__)
 @csrf_exempt
 def activate_license(request):
     temporary_key = request.POST.get('temporary_key')
@@ -470,8 +452,6 @@ def activate_license(request):
     except Subscription.DoesNotExist:
         logger.error(f"Subscription with temporary_key: {temporary_key} does not exist")
         return JsonResponse({"status": "invalid_temporary_key"}, status=400)
-
-
 
 @csrf_exempt
 def check_license(request):
@@ -545,7 +525,6 @@ def stripe_webhook(request):
 
     return HttpResponse(status=200)
 
-
 @login_required
 def create_subscription(request):
     if request.method == 'POST':
@@ -598,7 +577,6 @@ def create_subscription(request):
 
     return render(request, 'authentication/create_subscription.html', {'form': form})
 
-
 @login_required
 def change_subscription(request):
     if request.method == 'POST':
@@ -619,3 +597,4 @@ def change_subscription(request):
         form = SubscriptionPlanForm()
 
     return render(request, 'authentication/change_subscription.html', {'form': form})
+[]
