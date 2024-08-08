@@ -3,39 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ολοκλήρωση Πληρωμής</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <style>
-        body {
-            font-family: Tahoma, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        .content {
-            flex: 1;
-            padding: 20px;
-        }
-    </style>
+    <title>Πληρωμή μέσω PayPal</title>
 </head>
 <body>
-    <div class="content">
-        <div class="container py-4 py-md-5 my-5">
-            <div class="row">
-                <div class="col-md-9 text-center text-md-start">
-                    <h2 class="display-6 fw-bold mb-5">
-                        <span class="underline pb-1"><strong>Ολοκλήρωση Πληρωμής</strong></span>
-                    </h2>
-                    <form action="{% url 'paypal-ipn' %}" method="post">
-                        {{ form.render }}
-                        <input type="submit" value="Pay with PayPal" class="btn btn-primary">
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+    <h1>Ολοκλήρωση Πληρωμής</h1>
+    <form action="{% url 'paypal_payment' %}" method="post">
+        {{ form.render }}
+        {% csrf_token %}
+        <input type="submit" value="Πληρωμή">
+    </form>
 </body>
 </html>

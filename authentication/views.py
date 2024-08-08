@@ -91,16 +91,14 @@ def paypal_execute(request):
     payment_id = request.GET.get('paymentId')
     payer_id = request.GET.get('PayerID')
 
-    payment = paypalrestsdk.Payment.find(payment_id)
+    payment = Payment.find(payment_id)
 
     if payment.execute({"payer_id": payer_id}):
-        # Ενημέρωση συνδρομής στη βάση δεδομένων
         subscription = Subscription.objects.filter(tenant__schema_name=request.user.username).first()
         if subscription:
             subscription.active = True
             subscription.save()
 
-        # Αποστολή email στον πωλητή και τον αγοραστή
         send_mail(
             'Επιτυχής Πληρωμή',
             'Η πληρωμή σας ολοκληρώθηκε με επιτυχία.',
@@ -109,7 +107,6 @@ def paypal_execute(request):
             fail_silently=False,
         )
 
-        # Δημιουργία προσωρινού κλειδιού
         temporary_key = generate_temporary_key()
         subscription.temporary_key = temporary_key
         subscription.save()
@@ -117,6 +114,8 @@ def paypal_execute(request):
         return render(request, 'payment/success.html')
     else:
         return render(request, 'payment/error.html', {'error': payment.error})
+
+
 
 @ensure_csrf_cookie
 def get_csrf_token(request):
@@ -319,7 +318,6 @@ def register(request):
     return render(request, 'authentication/register.html', {'form': form})
 
 
-
 @login_required
 def process_payment(request):
     if request.method == 'POST':
@@ -329,12 +327,12 @@ def process_payment(request):
 
             try:
                 charge = stripe.Charge.create(
-                    amount=5000,  # Το ποσό σε cents (π.χ. $50.00)
+                    amount=5000,
                     currency='usd',
                     description='Example charge',
                     source=stripe_token,
                 )
-                # Εύρεση της συνδρομής και ενεργοποίησή της
+
                 tenant = Tenant.objects.get(schema_name=request.user.username)
                 subscription = Subscription.objects.get(tenant=tenant)
                 subscription.active = True

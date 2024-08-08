@@ -26,5 +26,5 @@ urlpatterns = [
     path('payment/cancelled/', views.payment_cancelled, name='payment_cancelled'),
     path('payment/done/', views.payment_done, name='payment_done'),
     path('payment/error/', views.payment_error, name='payment_error'),
-    path('paypal-ipn/', include('paypal.standard.ipn.urls')),  # URL για PayPal IPN
+    path('paypal-ipn/', include('paypal.standard.ipn.urls')),
 ]
