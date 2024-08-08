@@ -1,99 +1,42 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Προφίλ Χρήστη</title>
-    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
-    <style>
-        body {
-            font-family: Tahoma, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        .content {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        .profile-container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 600px;
-        }
-        .profile-container h2 {
-            margin-bottom: 20px;
-        }
-        .profile-container p {
-            margin: 10px 0;
-        }
-        .btn {
-            margin-top: 10px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container content">
-        <div class="profile-container">
-            <h2>Προφίλ Χρήστη</h2>
-            <p><strong>Όνομα χρήστη:</strong> {{ current_user.username }}</p>
-            <p><strong>Email:</strong> {{ current_user.email }}</p>
+{% extends "base.html" %}
 
-            <h3>Στοιχεία Tenant</h3>
-            {% if tenant %}
-                <p><strong>Όνομα:</strong> {{ tenant.name }}</p>
-                <p><strong>Ημερομηνία δημιουργίας:</strong> {{ tenant.created_on }}</p>
-            {% else %}
-                <p>Δεν βρέθηκαν στοιχεία tenant.</p>
-            {% endif %}
+{% block title %}Προφίλ Χρήστη{% endblock %}
 
-            <h3>Στοιχεία Συνδρομής</h3>
-            {% if subscription %}
-                <p><strong>Τύπος Συνδρομής:</strong> {{ subscription.subscription_type }}</p>
-                <p><strong>Ημερομηνία Έναρξης:</strong> {{ subscription.start_date }}</p>
-                <p><strong>Ημερομηνία Λήξης:</strong> {{ subscription.end_date }}</p>
-                <p><strong>Τιμή:</strong> {{ subscription.price }}</p>
-                <p><strong>Ενεργή:</strong> {{ subscription.active }}</p>
-            {% else %}
-                <p>Δεν βρέθηκαν στοιχεία συνδρομής.</p>
-            {% endif %}
-
-            <h3>Κλειδιά Άδειας</h3>
-            <p><strong>Προσωρινό Κλειδί:</strong> {{ temporary_key }}</p>
-            {% if hardware_id and computer_name %}
-                <p><strong>Hardware ID:</strong> {{ hardware_id }}</p>
-                <p><strong>Όνομα Υπολογιστή:</strong> {{ computer_name }}</p>
-            {% endif %}
-
-            <!-- Προσθήκη φόρμας για εισαγωγή προσωρινού κλειδιού και ενεργοποίηση άδειας -->
-            <form method="post" action="{% url 'activate_license' %}">
-                {% csrf_token %}
-                <input type="hidden" name="temporary_key" value="{{ temporary_key }}">
-                <div class="form-group">
-                    <label for="hardware_id">Hardware ID:</label>
-                    <input type="text" id="hardware_id" name="hardware_id" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="computer_name">Όνομα Υπολογιστή:</label>
-                    <input type="text" id="computer_name" name="computer_name" class="form-control" required>
-                </div>
-                <button type="submit" class="btn btn-primary">Activate License</button>
-            </form>
-
-            <!-- Προσθήκη κουμπιού πληρωμής -->
-            <a href="{% url 'paypal_payment' %}" class="btn btn-primary mt-3">Ολοκλήρωση Πληρωμής</a>
-
-            <a href="{% url 'password_change' %}" class="btn btn-secondary">Αλλαγή Κωδικού Πρόσβασης</a>
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4">Προφίλ Χρήστη</h1>
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="card-title">Στοιχεία Χρήστη</h5>
+            <p class="card-text"><strong>Όνομα Χρήστη:</strong> {{ current_user.username }}</p>
+            <p class="card-text"><strong>Email:</strong> {{ current_user.email }}</p>
         </div>
     </div>
-</body>
-</html>
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="card-title">Συνδρομή</h5>
+            {% if subscription %}
+            <p class="card-text"><strong>Τύπος Συνδρομής:</strong> {{ subscription.subscription_type }}</p>
+            <p class="card-text"><strong>Ημερομηνία Λήξης:</strong> {{ subscription.end_date }}</p>
+            <p class="card-text"><strong>Προσωρινό Κλειδί:</strong> {{ temporary_key }}</p>
+            {% if subscription.temporary_key %}
+            <p class="card-text"><strong>Προσωρινό Κλειδί:</strong> {{ subscription.temporary_key }}</p>
+            {% endif %}
+            {% else %}
+            <p class="card-text">Δεν υπάρχει ενεργή συνδρομή.</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="card-title">Άδεια</h5>
+            {% if hardware_id and computer_name %}
+            <p class="card-text"><strong>ID Υλικού:</strong> {{ hardware_id }}</p>
+            <p class="card-text"><strong>Όνομα Υπολογιστή:</strong> {{ computer_name }}</p>
+            {% else %}
+            <p class="card-text">Δεν υπάρχει καταχωρημένη άδεια.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

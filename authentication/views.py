@@ -257,6 +257,7 @@ def register(request):
     return render(request, 'authentication/register.html', {'form': form})
 
 
+
 @login_required
 def profile_view(request):
     current_user = request.user
@@ -269,6 +270,9 @@ def profile_view(request):
     try:
         tenant = Tenant.objects.get(schema_name=current_user.username)
         subscription = Subscription.objects.get(tenant=tenant)
+        license = License.objects.get(tenant=tenant)
+        hardware_id = license.hardware_id
+        computer_name = license.computer_name
 
         if not subscription.temporary_key:
             temporary_key = generate_temporary_key()
@@ -276,17 +280,11 @@ def profile_view(request):
             subscription.save()
         else:
             temporary_key = subscription.temporary_key
-
-        try:
-            license = License.objects.get(tenant=tenant)
-            hardware_id = license.hardware_id
-            computer_name = license.computer_name
-        except License.DoesNotExist:
-            pass
-
     except Tenant.DoesNotExist:
         pass
     except Subscription.DoesNotExist:
+        pass
+    except License.DoesNotExist:
         pass
 
     context = {
@@ -299,6 +297,8 @@ def profile_view(request):
     }
 
     return render(request, 'authentication/profile.html', context)
+
+
 
 
 @csrf_exempt
