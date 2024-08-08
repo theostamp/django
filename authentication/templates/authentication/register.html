@@ -68,6 +68,15 @@
             padding: 10px;
             border-radius: 4px;
         }
+
+        .alert {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
     </style>
 </head>
 
@@ -105,21 +114,44 @@
                         <form method="post" action="{% url 'register' %}">
                             {% csrf_token %}
                             {{ form.non_field_errors }}
+
+                            {% if messages %}
+                            <div class="alert alert-danger" role="alert">
+                                <ul class="messages">
+                                    {% for message in messages %}
+                                    <li>{{ message }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+
                             <div class="form-group">
                                 {{ form.username.label_tag }}
                                 {{ form.username }}
+                                {% if form.username.errors %}
+                                <div class="text-danger">{{ form.username.errors }}</div>
+                                {% endif %}
                             </div>
                             <div class="form-group">
                                 {{ form.email.label_tag }}
                                 {{ form.email }}
+                                {% if form.email.errors %}
+                                <div class="text-danger">{{ form.email.errors }}</div>
+                                {% endif %}
                             </div>
                             <div class="form-group">
                                 {{ form.password1.label_tag }}
                                 {{ form.password1 }}
+                                {% if form.password1.errors %}
+                                <div class="text-danger">{{ form.password1.errors }}</div>
+                                {% endif %}
                             </div>
                             <div class="form-group">
                                 {{ form.password2.label_tag }}
                                 {{ form.password2 }}
+                                {% if form.password2.errors %}
+                                <div class="text-danger">{{ form.password2.errors }}</div>
+                                {% endif %}
                             </div>
                             <div class="form-group">
                                 {{ form.plan.label_tag }}
@@ -127,13 +159,6 @@
                             </div>
                             <button class="btn btn-primary shadow" type="submit">Εγγραφή</button>
                         </form>
-                        {% if messages %}
-                        <ul class="messages">
-                            {% for message in messages %}
-                            <li class="{{ message.tags }}">{{ message }}</li>
-                            {% endfor %}
-                        </ul>
-                        {% endif %}
                         <p class="text-muted">
                             Έχετε ήδη λογαριασμό;
                             <a href="{% url 'login' %}">

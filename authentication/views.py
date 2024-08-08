@@ -273,6 +273,7 @@ def setup_url(request):
 
     return render(request, 'authentication/setup_url.html', {'form': form})
 
+
 def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
@@ -282,23 +283,36 @@ def register(request):
             password = form.cleaned_data.get('password1')
             plan = form.cleaned_data.get('plan')
 
-            user = CustomUser.objects.create_user(username=username, email=email, password=password)
-            user.save()
+            try:
+                user = CustomUser.objects.create_user(username=username, email=email, password=password)
+                user.save()
 
-            tenant, tenant_error = create_tenant(user, plan)
-            if tenant_error:
-                messages.error(request, tenant_error)
-                return render(request, 'authentication/register.html', {'form': form})
+                tenant, tenant_error = create_tenant(user, plan)
+                if tenant_error:
+                    messages.error(request, tenant_error)
+                    return render(request, 'authentication/register.html', {'form': form})
 
-            login(request, user)
-            messages.success(request, 'Ο λογαριασμός δημιουργήθηκε επιτυχώς! Παρακαλώ ολοκληρώστε την πληρωμή σας.')
-            return redirect('profile')
+                login(request, user)
+                messages.success(request, 'Ο λογαριασμός δημιουργήθηκε επιτυχώς! Παρακαλώ ολοκληρώστε την πληρωμή σας.')
+                return redirect('profile')
+            except IntegrityError as e:
+                messages.error(request, f'Προέκυψε σφάλμα κατά τη δημιουργία του χρήστη: {str(e)}')
+            except Exception as e:
+                messages.error(request, f'Προέκυψε απροσδόκητο σφάλμα: {str(e)}')
         else:
-            messages.error(request, 'Σφάλμα κατά την εγγραφή. Παρακαλώ ελέγξτε το φόρμα.')
+            # Εξαγωγή και φιλική παρουσίαση των σφαλμάτων
+            for field, errors in form.errors.items():
+                for error in errors:
+                    if field == 'email' and 'unique' in error:
+                        messages.error(request, 'Αυτό το email χρησιμοποιείται ήδη. Παρακαλώ χρησιμοποιήστε άλλο email.')
+                    else:
+                        messages.error(request, f'Σφάλμα στο πεδίο "{form.fields[field].label}": {error}')
     else:
         form = CustomUserCreationForm()
 
     return render(request, 'authentication/register.html', {'form': form})
+
+
 
 @login_required
 def process_payment(request):
@@ -417,7 +431,6 @@ def profile_view(request):
 import logging
 
 logger = logging.getLogger(__name__)
-
 @csrf_exempt
 def activate_license(request):
     temporary_key = request.POST.get('temporary_key')
@@ -429,20 +442,19 @@ def activate_license(request):
     logger.debug(f"Received hardware_id: {hardware_id}")
     logger.debug(f"Received computer_name: {computer_name}")
 
-    # Εκτύπωση στην κονσόλα
-    print("Attempting to activate license with the following details:")
-    print(f"Temporary Key: {temporary_key}")
-    print(f"Hardware ID: {hardware_id}")
-    print(f"Computer Name: {computer_name}")
-
     if not temporary_key or not hardware_id or not computer_name:
         logger.warning("Missing parameters in request")
-        print("Failed activation: Missing parameters")  # Μήνυμα στην κονσόλα
         return JsonResponse({"status": "missing_parameters"}, status=400)
 
     try:
         subscription = Subscription.objects.get(temporary_key=temporary_key)
-        logger.debug(f"Found subscription with temporary_key: {temporary_key}")
+        logger.debug(f"Found subscription with temporary_key: {temporary_key}, tenant: {subscription.tenant}, active: {subscription.active}")
+
+        # Ελέγξτε αν η συνδρομή είναι ενεργή
+        if not subscription.active:
+            logger.warning(f"Subscription with temporary_key: {temporary_key} is not active.")
+            return JsonResponse({"status": "inactive_subscription"}, status=400)
+
         tenant = subscription.tenant
 
         permanent_key = str(uuid.uuid4())
@@ -457,14 +469,10 @@ def activate_license(request):
         license.save()
 
         logger.debug(f"License created with permanent_key: {permanent_key}")
-        print(f"License activation successful with permanent key: {permanent_key}")  # Μήνυμα στην κονσόλα
-
         return JsonResponse({"permanent_key": permanent_key})
     except Subscription.DoesNotExist:
-        logger.error(f"Subscription with temporary_key: {temporary_key} does not exist")
-        print(f"Failed activation: Subscription with temporary_key {temporary_key} does not exist")  # Μήνυμα στην κονσόλα
+        logger.error(f"Subscription with temporary_key: {temporary_key} does not exist. All subscriptions: {Subscription.objects.all()}")
         return JsonResponse({"status": "invalid_temporary_key"}, status=400)
-
 
 
 
