@@ -1,5 +1,7 @@
 #!/bin/bash
 python3 -m pip install -r requirements.txt
+python z_clear_cache.py
+python z_clear.py
 echo "Running migrations..."
 python manage.py makemigrations authentication
 python manage.py makemigrations  tables
@@ -50,4 +52,5 @@ END
 echo "Starting  server..."
 # gunicorn --workers 2 --threads 4 --timeout 60 --access-logfile '-' --error-logfile '-' --bind=0.0.0.0:8000 --chdir=/home/site/wwwroot azureproject.wsgi
   cp .env.sample.devcontainer .env
+
   python manage.py runserver 8003

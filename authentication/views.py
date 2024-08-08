@@ -209,6 +209,8 @@ def user_credits(request):
     }
     return render(request, 'authentication/user_credits.html', context)
 
+
+
 def create_tenant(user, plan):
     with schema_context('public'):
         if Tenant.objects.filter(schema_name=user.username).exists():
@@ -224,6 +226,10 @@ def create_tenant(user, plan):
             return None, "Προέκυψε σφάλμα κατά τη δημιουργία του tenant."
 
     return tenant, None
+
+
+
+
 
 def create_folders_for_tenant(tenant_name):
     base_tenant_folder = settings.TENANTS_BASE_FOLDER

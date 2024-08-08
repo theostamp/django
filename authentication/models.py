@@ -8,6 +8,7 @@ class Domain(DomainMixin):
     pass
 
 
+
 class CustomUser(AbstractUser):
     email = models.EmailField(unique=True, blank=False)  # Σιγουρευτείτε ότι το email είναι υποχρεωτικό και μοναδικό
 
@@ -15,6 +16,7 @@ class Tenant(models.Model):
     schema_name = models.CharField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
     created_on = models.DateTimeField(auto_now_add=True)
+    subscription_type = models.CharField(max_length=50, blank=True, null=True)  # Προσθήκη του πεδίου subscription_type
 
 class Subscription(models.Model):
     tenant = models.OneToOneField(Tenant, on_delete=models.CASCADE)
@@ -23,7 +25,7 @@ class Subscription(models.Model):
     end_date = models.DateTimeField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     active = models.BooleanField(default=False)
-    temporary_key = models.CharField(max_length=8, blank=True, null=True)  # Προσθήκη του πεδίου temporary_key
+    temporary_key = models.CharField(max_length=8, blank=True, null=True)
 
 class License(models.Model):
     tenant = models.OneToOneField(Tenant, on_delete=models.CASCADE)
