@@ -19,11 +19,10 @@
             <p class="card-text"><strong>Τύπος Συνδρομής:</strong> {{ subscription.subscription_type }}</p>
             <p class="card-text"><strong>Ημερομηνία Λήξης:</strong> {{ subscription.end_date }}</p>
             <p class="card-text"><strong>Προσωρινό Κλειδί:</strong> {{ temporary_key }}</p>
-            {% if subscription.temporary_key %}
-            <p class="card-text"><strong>Προσωρινό Κλειδί:</strong> {{ subscription.temporary_key }}</p>
-            {% endif %}
+            <a href="{% url 'select_subscription' %}" class="btn btn-warning">Αλλαγή Συνδρομής</a>
             {% else %}
             <p class="card-text">Δεν υπάρχει ενεργή συνδρομή.</p>
+            <a href="{% url 'select_subscription' %}" class="btn btn-primary">Δημιουργία Συνδρομής</a>
             {% endif %}
         </div>
     </div>

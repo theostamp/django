@@ -299,8 +299,6 @@ def profile_view(request):
     return render(request, 'authentication/profile.html', context)
 
 
-
-
 @csrf_exempt
 def activate_license(request):
     temporary_key = request.POST.get('temporary_key')
@@ -391,24 +389,42 @@ def user_credits(request):
     return render(request, 'authentication/user_credits.html', context)
 
 
+
 @login_required
 def select_subscription(request):
     if request.method == 'POST':
         form = SubscriptionPlanForm(request.POST)
         if form.is_valid():
-            tenant, tenant_error = create_tenant(request.user, form.cleaned_data['plan'])
-            if tenant_error:
-                messages.error(request, tenant_error)
-                return render(request, 'authentication/select_subscription.html', {'form': form})
-
-            messages.success(request, 'Ο tenant δημιουργήθηκε επιτυχώς!')
-            return redirect('user_credits')
+            plan = form.cleaned_data['plan']
+            tenant = Tenant.objects.get(schema_name=request.user.username)
+            subscription = Subscription.objects.get(tenant=tenant)
+            if subscription:
+                subscription.subscription_type = plan
+                subscription.save()
+                messages.success(request, 'Η συνδρομή σας ενημερώθηκε επιτυχώς!')
+            else:
+                # Δημιουργία νέας συνδρομής
+                end_date = timezone.now() + timedelta(days=30) if plan == 'trial' else timezone.now() + timedelta(days=365)
+                price = 0 if plan == 'trial' else 100
+                Subscription.objects.create(
+                    tenant=tenant,
+                    subscription_type=plan,
+                    start_date=timezone.now(),
+                    end_date=end_date,
+                    price=price
+                )
+                messages.success(request, 'Η νέα συνδρομή σας δημιουργήθηκε επιτυχώς!')
+            return redirect('profile')
         else:
             messages.error(request, 'Σφάλμα κατά την επιλογή συνδρομής. Παρακαλώ ελέγξτε το φόρμα.')
     else:
         form = SubscriptionPlanForm()
 
     return render(request, 'authentication/select_subscription.html', {'form': form})
+
+
+
+
 
 
 @login_required
