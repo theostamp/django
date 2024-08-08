@@ -44,6 +44,7 @@ from django.conf import settings
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
+
 paypalrestsdk.configure({
     "mode": settings.PAYPAL_MODE,  # sandbox ή live
     "client_id": settings.PAYPAL_CLIENT_ID,
@@ -277,8 +278,9 @@ def create_user(username, password):
 
 
 
-# authentication/views.py
-from django.urls import reverse
+
+
+
 
 def register(request):
     if request.method == 'POST':
@@ -298,23 +300,9 @@ def register(request):
                 messages.error(request, tenant_error)
                 return render(request, 'authentication/register.html', {'form': form})
 
-            if plan == 'trial':
-                end_date = timezone.now() + timedelta(days=30)
-                price = 0
-            else:
-                end_date = timezone.now() + timedelta(days=365)
-                price = 100
-
-            Subscription.objects.create(
-                tenant=tenant,
-                subscription_type=plan,
-                start_date=timezone.now(),
-                end_date=end_date,
-                price=price
-            )
-
-            messages.success(request, 'Ο λογαριασμός δημιουργήθηκε επιτυχώς! Παρακαλώ συνδεθείτε.')
-            return redirect(reverse('login'))
+            login(request, user)
+            messages.success(request, 'Ο λογαριασμός δημιουργήθηκε επιτυχώς! Παρακαλώ ολοκληρώστε την πληρωμή σας.')
+            return redirect('login')
         else:
             messages.error(request, 'Σφάλμα κατά την εγγραφή. Παρακαλώ ελέγξτε το φόρμα.')
     else:
@@ -404,7 +392,7 @@ def login_view(request):
 
     return render(request, 'authentication/login.html', {'form': form})
 
-# authentication/views.py
+
 
 @login_required
 def profile_view(request):
@@ -412,23 +400,21 @@ def profile_view(request):
     tenant = None
     subscription = None
     temporary_key = None
-    email = current_user.email
+    email = current_user.email  # Χρησιμοποιούμε το email από τον τρέχοντα χρήστη
 
     try:
         tenant = Tenant.objects.get(schema_name=current_user.username)
-        subscription = Subscription.objects.filter(tenant=tenant).first()
-
-        if subscription:
-            if not subscription.temporary_key:
-                temporary_key = generate_temporary_key()
-                subscription.temporary_key = temporary_key
-                subscription.save()
-            else:
-                temporary_key = subscription.temporary_key
+        subscription = Subscription.objects.get(tenant=tenant)
+        if not subscription.temporary_key:
+            temporary_key = generate_temporary_key()
+            subscription.temporary_key = temporary_key
+            subscription.save()
+        else:
+            temporary_key = subscription.temporary_key
     except Tenant.DoesNotExist:
         pass
     except Subscription.DoesNotExist:
-        pass
+        subscription = None  # Εάν δεν υπάρχει συνδρομή, ορίζουμε το subscription σε None
 
     context = {
         'current_user': current_user,
@@ -439,6 +425,8 @@ def profile_view(request):
     }
 
     return render(request, 'authentication/profile.html', context)
+
+
 
 
 
