@@ -88,8 +88,8 @@ def paypal_payment(request):
     return render(request, 'payment/paypal_payment.html')
 
 
-@csrf_exempt
 @login_required
+@csrf_exempt
 def paypal_execute(request):
     payment_id = request.session.get('payment_id')
     payer_id = request.GET.get('PayerID')
@@ -107,13 +107,16 @@ def paypal_execute(request):
             subscription.save()
 
         # Αποστολή email στον πωλητή και τον αγοραστή
-        send_mail(
-            'Επιτυχής Πληρωμή',
-            'Η πληρωμή σας ολοκληρώθηκε με επιτυχία.',
-            settings.DEFAULT_FROM_EMAIL,
-            [request.user.email],
-            fail_silently=False,
-        )
+        try:
+            send_mail(
+                'Επιτυχής Πληρωμή',
+                'Η πληρωμή σας ολοκληρώθηκε με επιτυχία.',
+                settings.DEFAULT_FROM_EMAIL,
+                [request.user.email],
+                fail_silently=False,
+            )
+        except Exception as e:
+            logger.error(f"Failed to send email: {e}")
 
         # Δημιουργία προσωρινού κλειδιού
         temporary_key = generate_temporary_key()
@@ -123,6 +126,9 @@ def paypal_execute(request):
         return render(request, 'payment/success.html')
     else:
         return render(request, 'payment/error.html', {'error': payment.error})
+
+
+
 
 
 @ensure_csrf_cookie

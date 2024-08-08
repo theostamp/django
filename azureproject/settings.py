@@ -166,13 +166,17 @@ TENANTS_BASE_FOLDER = os.path.join(BASE_DIR, 'tenants_folders')
 
 CSRF_TRUSTED_ORIGINS = ['http://localhost:8003']
 
+from decouple import config
+
+# Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.your_email_provider.com'
+EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = 'theostam1966@gmail.com'
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = config('EMAIL_HOST_USER')
+
 
 
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
