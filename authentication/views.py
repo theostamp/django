@@ -8,6 +8,7 @@ from django.contrib.auth import get_user_model
 from django_tenants.utils import schema_context
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
+from django.urls import reverse  # Εισαγωγή της συνάρτησης reverse
 import stripe
 import os
 import logging
@@ -22,27 +23,11 @@ import uuid
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 from django.urls import reverse_lazy
 from decouple import config
-from django.shortcuts import render, redirect
-from django.urls import reverse
 from paypal.standard.forms import PayPalPaymentsForm
-from django.shortcuts import render, redirect
-from django.urls import reverse
-from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
-from django.contrib.auth.decorators import login_required
-from django.conf import settings
-import logging
-from django.contrib.auth import get_user_model
-User = get_user_model()
-from django.shortcuts import render, redirect
-from django.urls import reverse
-from paypalrestsdk import Payment
-from django.conf import settings
-import paypalrestsdk
-import logging
-from django.core.mail import send_mail
-from django.conf import settings
-from django.template.loader import render_to_string
-from django.utils.html import strip_tags
+from django.core.mail import send_mail  # Εισαγωγή της send_mail
+
+# Εισαγωγή του logger
+logger = logging.getLogger('django')
 
 paypalrestsdk.configure({
     "mode": settings.PAYPAL_MODE,  # sandbox ή live
@@ -50,7 +35,12 @@ paypalrestsdk.configure({
     "client_secret": settings.PAYPAL_CLIENT_SECRET
 })
 
-logger = logging.getLogger('django')
+def create_user(username, email, password):
+    User = get_user_model()
+    if User.objects.filter(username=username).exists():
+        return None, 'Το όνομα χρήστη υπάρχει ήδη.'
+    user = User.objects.create_user(username=username, email=email, password=password)
+    return user, None
 
 @login_required
 def paypal_payment(request):
@@ -269,13 +259,6 @@ def setup_url(request):
 
     return render(request, 'authentication/setup_url.html', {'form': form})
 
-def create_user(username, password):
-    if User.objects.filter(username=username).exists():
-        return None, 'Το όνομα χρήστη υπάρχει ήδη.'
-
-    user = User.objects.create_user(username=username, password=password)
-    return user, None
-
 def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
@@ -286,7 +269,7 @@ def register(request):
             plan = form.cleaned_data.get('plan')
 
             user = CustomUser.objects.create_user(username=username, email=email, password=password)
-            user.save()  # Αποθηκεύουμε το χρήστη στη βάση δεδομένων
+            user.save()
 
             tenant, tenant_error = create_tenant(user, plan)
             if tenant_error:
@@ -597,4 +580,3 @@ def change_subscription(request):
         form = SubscriptionPlanForm()
 
     return render(request, 'authentication/change_subscription.html', {'form': form})
-[]
