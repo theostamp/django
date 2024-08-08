@@ -393,7 +393,8 @@ def login_view(request):
     return render(request, 'authentication/login.html', {'form': form})
 
 
-# authentication/views.py
+
+
 
 @login_required
 def profile_view(request):
@@ -426,6 +427,9 @@ def profile_view(request):
     }
 
     return render(request, 'authentication/profile.html', context)
+
+
+
 
 
 
@@ -527,6 +531,7 @@ def stripe_webhook(request):
     return HttpResponse(status=200)
 
 
+
 # authentication/views.py
 
 @login_required
@@ -534,23 +539,54 @@ def create_subscription(request):
     if request.method == 'POST':
         form = SubscriptionPlanForm(request.POST)
         if form.is_valid():
-            plan = form.cleaned_data.get('plan')
+            plan = form.cleaned_data['plan']
             tenant = Tenant.objects.get(schema_name=request.user.username)
 
-            # Δημιουργία ή ενημέρωση συνδρομής
-            subscription, created = Subscription.objects.get_or_create(tenant=tenant)
-            subscription.subscription_type = plan
-            subscription.start_date = timezone.now()
-            subscription.end_date = timezone.now() + timedelta(days=30)
-            subscription.price = 0 if plan == 'trial' else 100  # Ορισμός τιμής
-            subscription.active = False  # Ορισμός ενεργής σε False μέχρι την επιτυχημένη πληρωμή
-            subscription.save()
+            # Ορισμός ημερομηνιών έναρξης και λήξης
+            start_date = timezone.now()
+            if plan == 'trial':
+                end_date = start_date + timedelta(days=30)
+                price = 0.00
+            elif plan == 'basic':
+                end_date = start_date + timedelta(days=365)
+                price = 100.00
+            elif plan == 'premium':
+                end_date = start_date + timedelta(days=365)
+                price = 200.00
+            elif plan == 'enterprise':
+                end_date = start_date + timedelta(days=365)
+                price = 500.00
 
-            return redirect('payment_view')
+            subscription, created = Subscription.objects.get_or_create(
+                tenant=tenant,
+                defaults={
+                    'start_date': start_date,
+                    'end_date': end_date,
+                    'subscription_type': plan,
+                    'price': price,
+                    'active': False,
+                }
+            )
+
+            if not created:
+                subscription.start_date = start_date
+                subscription.end_date = end_date
+                subscription.subscription_type = plan
+                subscription.price = price
+                subscription.save()
+
+            messages.success(request, 'Η συνδρομή σας δημιουργήθηκε επιτυχώς! Παρακαλώ ολοκληρώστε την πληρωμή σας.')
+            return redirect('paypal_payment')
+        else:
+            messages.error(request, 'Σφάλμα κατά τη δημιουργία της συνδρομής. Παρακαλώ δοκιμάστε ξανά.')
     else:
         form = SubscriptionPlanForm()
 
     return render(request, 'authentication/create_subscription.html', {'form': form})
+
+
+
+
 
 @login_required
 def change_subscription(request):
