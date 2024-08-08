@@ -27,7 +27,6 @@ from django.urls import reverse
 from paypal.standard.forms import PayPalPaymentsForm
 from django.shortcuts import render, redirect
 from django.urls import reverse
-from paypal.standard.forms import PayPalPaymentsForm
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
@@ -53,6 +52,10 @@ paypalrestsdk.configure({
 
 logger = logging.getLogger('django')
 
+
+
+
+@login_required
 def paypal_payment(request):
     if request.method == "POST":
         payment = paypalrestsdk.Payment({
@@ -79,6 +82,7 @@ def paypal_payment(request):
             for link in payment.links:
                 if link.rel == "approval_url":
                     approval_url = str(link.href)
+                    request.session['payment_id'] = payment.id
                     return redirect(approval_url)
         else:
             logger.error(payment.error)
@@ -86,73 +90,6 @@ def paypal_payment(request):
     return render(request, 'payment/paypal_payment.html')
 
 
-@csrf_exempt
-def paypal_execute(request):
-    payment_id = request.GET.get('paymentId')
-    payer_id = request.GET.get('PayerID')
-
-    payment = Payment.find(payment_id)
-
-    if payment.execute({"payer_id": payer_id}):
-        subscription = Subscription.objects.filter(tenant__schema_name=request.user.username).first()
-        if subscription:
-            subscription.active = True
-            subscription.save()
-
-        send_mail(
-            'Επιτυχής Πληρωμή',
-            'Η πληρωμή σας ολοκληρώθηκε με επιτυχία.',
-            settings.DEFAULT_FROM_EMAIL,
-            [request.user.email],
-            fail_silently=False,
-        )
-
-        temporary_key = generate_temporary_key()
-        subscription.temporary_key = temporary_key
-        subscription.save()
-
-        return render(request, 'payment/success.html')
-    else:
-        return render(request, 'payment/error.html', {'error': payment.error})
-
-
-
-@ensure_csrf_cookie
-def get_csrf_token(request):
-    logger.debug("Απόκτηση CSRF Token")
-    return JsonResponse({'csrfToken': request.META.get('CSRF_COOKIE')})
-
-
-
-@login_required
-def payment_view(request):
-    paypal_dict = {
-        "business": settings.PAYPAL_RECEIVER_EMAIL,
-        "amount": "10.00",
-        "item_name": "Subscription",
-        "invoice": "unique-invoice-id",  # Αναγνωριστικό συναλλαγής
-        "notify_url": request.build_absolute_uri(reverse('paypal-ipn')),
-        "return_url": request.build_absolute_uri(reverse('payment_done')),
-        "cancel_return": request.build_absolute_uri(reverse('payment_cancelled')),
-    }
-
-    form = PayPalPaymentsForm(initial=paypal_dict)
-    context = {"form": form}
-    return render(request, "payment/payment.html", context)
-
-
-
-
-def payment_done(request):
-    return render(request, "payment/done.html")
-
-def payment_cancelled(request):  # Εδώ ήταν σωστό
-    return render(request, "payment/canceled.html")
-
-def payment_error(request):
-    error_message = request.GET.get('error', 'Unknown error occurred.')
-    context = {"error": error_message}
-    return render(request, "payment/error.html", context)
 
 def create_payment(request):
     if request.method == "POST":
@@ -530,3 +467,111 @@ def stripe_webhook(request):
         print('Unhandled event type {}'.format(event['type']))
 
     return HttpResponse(status=200)
+
+
+
+@login_required
+def paypal_payment(request):
+    if request.method == "POST":
+        payment = paypalrestsdk.Payment({
+            "intent": "sale",
+            "payer": {
+                "payment_method": "paypal"},
+            "redirect_urls": {
+                "return_url": request.build_absolute_uri(reverse('paypal_execute')),
+                "cancel_url": request.build_absolute_uri(reverse('payment_cancelled'))},
+            "transactions": [{
+                "item_list": {
+                    "items": [{
+                        "name": "subscription",
+                        "sku": "001",
+                        "price": "10.00",
+                        "currency": "USD",
+                        "quantity": 1}]},
+                "amount": {
+                    "total": "10.00",
+                    "currency": "USD"},
+                "description": "Subscription payment."}]})
+
+        if payment.create():
+            for link in payment.links:
+                if link.rel == "approval_url":
+                    approval_url = str(link.href)
+                    request.session['payment_id'] = payment.id
+                    return redirect(approval_url)
+        else:
+            logger.error(payment.error)
+            return render(request, 'payment/error.html', {'error': payment.error})
+    return render(request, 'payment/paypal_payment.html')
+
+
+@csrf_exempt
+@login_required
+def paypal_execute(request):
+    payment_id = request.session.get('payment_id')
+    payer_id = request.GET.get('PayerID')
+
+    if not payment_id:
+        return redirect('payment_error')
+
+    payment = paypalrestsdk.Payment.find(payment_id)
+
+    if payment.execute({"payer_id": payer_id}):
+        # Ενημέρωση συνδρομής στη βάση δεδομένων
+        subscription = Subscription.objects.filter(tenant__schema_name=request.user.username).first()
+        if subscription:
+            subscription.active = True
+            subscription.save()
+
+        # Αποστολή email στον πωλητή και τον αγοραστή
+        send_mail(
+            'Επιτυχής Πληρωμή',
+            'Η πληρωμή σας ολοκληρώθηκε με επιτυχία.',
+            settings.DEFAULT_FROM_EMAIL,
+            [request.user.email],
+            fail_silently=False,
+        )
+
+        # Δημιουργία προσωρινού κλειδιού
+        temporary_key = generate_temporary_key()
+        subscription.temporary_key = temporary_key
+        subscription.save()
+
+        return render(request, 'payment/success.html')
+    else:
+        return render(request, 'payment/error.html', {'error': payment.error})
+
+
+@ensure_csrf_cookie
+def get_csrf_token(request):
+    logger.debug("Απόκτηση CSRF Token")
+    return JsonResponse({'csrfToken': request.META.get('CSRF_COOKIE')})
+
+@login_required
+def payment_view(request):
+    paypal_dict = {
+        "business": settings.PAYPAL_RECEIVER_EMAIL,
+        "amount": "10.00",
+        "item_name": "Subscription",
+        "invoice": "unique-invoice-id",  # Αναγνωριστικό συναλλαγής
+        "notify_url": request.build_absolute_uri(reverse('paypal-ipn')),
+        "return_url": request.build_absolute_uri(reverse('payment_done')),
+        "cancel_return": request.build_absolute_uri(reverse('payment_cancelled')),
+    }
+
+    form = PayPalPaymentsForm(initial=paypal_dict)
+    context = {"form": form}
+    return render(request, "payment/payment.html", context)
+
+def payment_done(request):
+    return render(request, "payment/done.html")
+
+def payment_cancelled(request):  # Εδώ ήταν σωστό
+    return render(request, "payment/canceled.html")
+
+
+
+def payment_error(request):
+    error_message = request.GET.get('error', 'Unknown error occurred.')
+    context = {"error": error_message}
+    return render(request, "payment/error.html", context)
