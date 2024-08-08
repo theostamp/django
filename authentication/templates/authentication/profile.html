@@ -1,41 +1,45 @@
 {% extends "base.html" %}
 
-{% block title %}Προφίλ Χρήστη{% endblock %}
-
 {% block content %}
-<div class="container py-5">
-    <h1 class="mb-4">Προφίλ Χρήστη</h1>
-    <div class="card mb-3">
-        <div class="card-body">
-            <h5 class="card-title">Στοιχεία Χρήστη</h5>
-            <p class="card-text"><strong>Όνομα Χρήστη:</strong> {{ current_user.username }}</p>
-            <p class="card-text"><strong>Email:</strong> {{ current_user.email }}</p>
-        </div>
-    </div>
-    <div class="card mb-3">
-        <div class="card-body">
-            <h5 class="card-title">Συνδρομή</h5>
-            {% if subscription %}
-            <p class="card-text"><strong>Τύπος Συνδρομής:</strong> {{ subscription.subscription_type }}</p>
-            <p class="card-text"><strong>Ημερομηνία Λήξης:</strong> {{ subscription.end_date }}</p>
-            <p class="card-text"><strong>Προσωρινό Κλειδί:</strong> {{ temporary_key }}</p>
-            <a href="{% url 'select_subscription' %}" class="btn btn-warning">Αλλαγή Συνδρομής</a>
-            {% else %}
-            <p class="card-text">Δεν υπάρχει ενεργή συνδρομή.</p>
-            <a href="{% url 'select_subscription' %}" class="btn btn-primary">Δημιουργία Συνδρομής</a>
-            {% endif %}
-        </div>
-    </div>
-    <div class="card mb-3">
-        <div class="card-body">
-            <h5 class="card-title">Άδεια</h5>
-            {% if hardware_id and computer_name %}
-            <p class="card-text"><strong>ID Υλικού:</strong> {{ hardware_id }}</p>
-            <p class="card-text"><strong>Όνομα Υπολογιστή:</strong> {{ computer_name }}</p>
-            {% else %}
-            <p class="card-text">Δεν υπάρχει καταχωρημένη άδεια.</p>
-            {% endif %}
-        </div>
-    </div>
-</div>
+<h2>Προφίλ Χρήστη</h2>
+<p><strong>Όνομα χρήστη:</strong> {{ current_user.username }}</p>
+<p><strong>Email:</strong> {{ current_user.email }}</p>
+
+<h3>Στοιχεία Tenant</h3>
+{% if tenant %}
+    <p><strong>Όνομα:</strong> {{ tenant.name }}</p>
+    <p><strong>Ημερομηνία δημιουργίας:</strong> {{ tenant.created_on }}</p>
+{% else %}
+    <p>Δεν βρέθηκαν στοιχεία tenant.</p>
+{% endif %}
+
+<h3>Στοιχεία Συνδρομής</h3>
+{% if subscription %}
+    <p><strong>Τύπος Συνδρομής:</strong> {{ subscription.subscription_type }}</p>
+    <p><strong>Ημερομηνία Έναρξης:</strong> {{ subscription.start_date }}</p>
+    <p><strong>Ημερομηνία Λήξης:</strong> {{ subscription.end_date }}</p>
+    <p><strong>Τιμή:</strong> {{ subscription.price }}</p>
+    <p><strong>Ενεργή:</strong> {{ subscription.active }}</p>
+{% else %}
+    <p>Δεν βρέθηκαν στοιχεία συνδρομής.</p>
+    <a href="{% url 'select_subscription' %}" class="btn btn-primary">Δημιουργία Συνδρομής</a>
+{% endif %}
+
+{% if subscription and subscription.active %}
+    <h3>Προσωρινό Κλειδί</h3>
+    <p><strong>Κλειδί:</strong> {{ temporary_key }}</p>
+
+    <h3>Ενεργοποίηση Άδειας</h3>
+    <form method="post" action="{% url 'activate_license' %}">
+        {% csrf_token %}
+        <input type="hidden" name="temporary_key" value="{{ temporary_key }}">
+        <label for="hardware_id">Hardware ID:</label>
+        <input type="text" id="hardware_id" name="hardware_id">
+        <label for="computer_name">Computer Name:</label>
+        <input type="text" id="computer_name" name="computer_name">
+        <button type="submit" class="btn btn-primary">Activate License</button>
+    </form>
+    <a href="{% url 'select_subscription' %}" class="btn btn-secondary mt-3">Αλλαγή Συνδρομής</a>
+{% endif %}
+<a href="{% url 'password_change' %}" class="btn btn-primary">Αλλαγή Κωδικού Πρόσβασης</a>
 {% endblock %}
