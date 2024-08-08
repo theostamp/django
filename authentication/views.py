@@ -399,6 +399,8 @@ def login_view(request):
 
     return render(request, 'authentication/login.html', {'form': form})
 
+# authentication/views.py
+
 @login_required
 def profile_view(request):
     current_user = request.user
@@ -438,6 +440,7 @@ def profile_view(request):
     }
 
     return render(request, 'authentication/profile.html', context)
+
 
 @csrf_exempt
 def activate_license(request):

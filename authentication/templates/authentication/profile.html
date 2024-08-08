@@ -1,3 +1,4 @@
+<!-- authentication/templates/authentication/profile.html -->
 {% extends "base.html" %}
 
 {% block content %}
@@ -20,26 +21,11 @@
     <p><strong>Ημερομηνία Λήξης:</strong> {{ subscription.end_date }}</p>
     <p><strong>Τιμή:</strong> {{ subscription.price }}</p>
     <p><strong>Ενεργή:</strong> {{ subscription.active }}</p>
+    <p><strong>Προσωρινό Κλειδί:</strong> {{ temporary_key }}</p>
+    <a href="{% url 'select_subscription' %}" class="btn btn-warning mt-3">Αλλαγή Συνδρομής</a>
 {% else %}
     <p>Δεν βρέθηκαν στοιχεία συνδρομής.</p>
-    <a href="{% url 'select_subscription' %}" class="btn btn-primary">Δημιουργία Συνδρομής</a>
+    <a href="{% url 'select_subscription' %}" class="btn btn-primary mt-3">Δημιουργία Συνδρομής</a>
 {% endif %}
-
-{% if subscription and subscription.active %}
-    <h3>Προσωρινό Κλειδί</h3>
-    <p><strong>Κλειδί:</strong> {{ temporary_key }}</p>
-
-    <h3>Ενεργοποίηση Άδειας</h3>
-    <form method="post" action="{% url 'activate_license' %}">
-        {% csrf_token %}
-        <input type="hidden" name="temporary_key" value="{{ temporary_key }}">
-        <label for="hardware_id">Hardware ID:</label>
-        <input type="text" id="hardware_id" name="hardware_id">
-        <label for="computer_name">Computer Name:</label>
-        <input type="text" id="computer_name" name="computer_name">
-        <button type="submit" class="btn btn-primary">Activate License</button>
-    </form>
-    <a href="{% url 'select_subscription' %}" class="btn btn-secondary mt-3">Αλλαγή Συνδρομής</a>
-{% endif %}
-<a href="{% url 'password_change' %}" class="btn btn-primary">Αλλαγή Κωδικού Πρόσβασης</a>
+<a href="{% url 'password_change' %}" class="btn btn-secondary mt-3">Αλλαγή Κωδικού Πρόσβασης</a>
 {% endblock %}
