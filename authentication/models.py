@@ -8,6 +8,9 @@ class CustomUser(AbstractUser):
     phone_number = models.CharField(max_length=15, blank=True)
     groups = models.ManyToManyField(Group, related_name='custom_user_set')
     user_permissions = models.ManyToManyField(Permission, related_name='custom_user_set_permissions')
+    email = models.EmailField(unique=True)
+
+
 
 class Tenant(TenantMixin):
     name = models.CharField(max_length=100, unique=True)

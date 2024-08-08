@@ -279,21 +279,17 @@ def create_user(username, password):
 
 
 
-
-
-
 def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             username = form.cleaned_data.get('username')
+            email = form.cleaned_data.get('email')
             password = form.cleaned_data.get('password1')
             plan = form.cleaned_data.get('plan')
 
-            user, user_error = create_user(username, password)
-            if user_error:
-                messages.error(request, user_error)
-                return render(request, 'authentication/register.html', {'form': form})
+            user = CustomUser.objects.create_user(username=username, email=email, password=password)
+            user.save()  # Αποθηκεύουμε το χρήστη στη βάση δεδομένων
 
             tenant, tenant_error = create_tenant(user, plan)
             if tenant_error:
@@ -302,13 +298,14 @@ def register(request):
 
             login(request, user)
             messages.success(request, 'Ο λογαριασμός δημιουργήθηκε επιτυχώς! Παρακαλώ ολοκληρώστε την πληρωμή σας.')
-            return redirect('login')
+            return redirect('profile')
         else:
             messages.error(request, 'Σφάλμα κατά την εγγραφή. Παρακαλώ ελέγξτε το φόρμα.')
     else:
         form = CustomUserCreationForm()
 
     return render(request, 'authentication/register.html', {'form': form})
+
 
 
 @login_required

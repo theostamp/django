@@ -25,6 +25,7 @@ class CustomUserCreationForm(UserCreationForm):
         self.fields['password2'].widget.attrs.update({'class': 'form-control'})
         self.fields['plan'].widget.attrs.update({'class': 'form-select'})
 
+        
 class CustomUserLoginForm(AuthenticationForm):
     class Meta:
         model = CustomUser
