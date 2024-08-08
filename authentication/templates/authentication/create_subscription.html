@@ -1,0 +1,13 @@
+<!-- authentication/templates/authentication/create_subscription.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Δημιουργία Συνδρομής</h2>
+    <form method="post" action="{% url 'create_subscription' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Δημιουργία Συνδρομής</button>
+    </form>
+</div>
+{% endblock %}

@@ -28,4 +28,6 @@ urlpatterns = [
     path('payment/done/', views.payment_done, name='payment_done'),
     path('payment/error/', views.payment_error, name='payment_error'),
     path('paypal-ipn/', include('paypal.standard.ipn.urls')),
+    path('create-subscription/', views.create_subscription, name='create_subscription'),
+    path('change-subscription/', views.change_subscription, name='change_subscription'),
 ]

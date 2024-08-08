@@ -275,6 +275,11 @@ def create_user(username, password):
     user = User.objects.create_user(username=username, password=password)
     return user, None
 
+
+
+# authentication/views.py
+from django.urls import reverse
+
 def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
@@ -308,15 +313,15 @@ def register(request):
                 price=price
             )
 
-            login(request, user)
-            messages.success(request, 'Ο λογαριασμός δημιουργήθηκε επιτυχώς! Παρακαλώ ολοκληρώστε την πληρωμή σας.')
-            return redirect('payment_view')
+            messages.success(request, 'Ο λογαριασμός δημιουργήθηκε επιτυχώς! Παρακαλώ συνδεθείτε.')
+            return redirect(reverse('login'))
         else:
             messages.error(request, 'Σφάλμα κατά την εγγραφή. Παρακαλώ ελέγξτε το φόρμα.')
     else:
         form = CustomUserCreationForm()
 
     return render(request, 'authentication/register.html', {'form': form})
+
 
 @login_required
 def process_payment(request):
@@ -407,27 +412,22 @@ def profile_view(request):
     tenant = None
     subscription = None
     temporary_key = None
-    hardware_id = None
-    computer_name = None
+    email = current_user.email
 
     try:
         tenant = Tenant.objects.get(schema_name=current_user.username)
-        subscription = Subscription.objects.get(tenant=tenant)
-        license = License.objects.get(tenant=tenant)
-        hardware_id = license.hardware_id
-        computer_name = license.computer_name
+        subscription = Subscription.objects.filter(tenant=tenant).first()
 
-        if not subscription.temporary_key:
-            temporary_key = generate_temporary_key()
-            subscription.temporary_key = temporary_key
-            subscription.save()
-        else:
-            temporary_key = subscription.temporary_key
+        if subscription:
+            if not subscription.temporary_key:
+                temporary_key = generate_temporary_key()
+                subscription.temporary_key = temporary_key
+                subscription.save()
+            else:
+                temporary_key = subscription.temporary_key
     except Tenant.DoesNotExist:
         pass
     except Subscription.DoesNotExist:
-        pass
-    except License.DoesNotExist:
         pass
 
     context = {
@@ -435,11 +435,11 @@ def profile_view(request):
         'tenant': tenant,
         'subscription': subscription,
         'temporary_key': temporary_key,
-        'hardware_id': hardware_id,
-        'computer_name': computer_name,
+        'email': email,
     }
 
     return render(request, 'authentication/profile.html', context)
+
 
 
 @csrf_exempt
@@ -538,3 +538,50 @@ def stripe_webhook(request):
         print('Unhandled event type {}'.format(event['type']))
 
     return HttpResponse(status=200)
+
+
+# authentication/views.py
+
+@login_required
+def create_subscription(request):
+    if request.method == 'POST':
+        form = SubscriptionPlanForm(request.POST)
+        if form.is_valid():
+            plan = form.cleaned_data.get('plan')
+            tenant = Tenant.objects.get(schema_name=request.user.username)
+
+            # Δημιουργία ή ενημέρωση συνδρομής
+            subscription, created = Subscription.objects.get_or_create(tenant=tenant)
+            subscription.subscription_type = plan
+            subscription.start_date = timezone.now()
+            subscription.end_date = timezone.now() + timedelta(days=30)
+            subscription.price = 0 if plan == 'trial' else 100  # Ορισμός τιμής
+            subscription.active = False  # Ορισμός ενεργής σε False μέχρι την επιτυχημένη πληρωμή
+            subscription.save()
+
+            return redirect('payment_view')
+    else:
+        form = SubscriptionPlanForm()
+
+    return render(request, 'authentication/create_subscription.html', {'form': form})
+
+@login_required
+def change_subscription(request):
+    if request.method == 'POST':
+        form = SubscriptionPlanForm(request.POST)
+        if form.is_valid():
+            plan = form.cleaned_data.get('plan')
+            tenant = Tenant.objects.get(schema_name=request.user.username)
+            subscription = Subscription.objects.get(tenant=tenant)
+            subscription.subscription_type = plan
+            subscription.start_date = timezone.now()
+            subscription.end_date = timezone.now() + timedelta(days=30)
+            subscription.price = 0 if plan == 'trial' else 100  # Ορισμός τιμής
+            subscription.active = False  # Ορισμός ενεργής σε False μέχρι την επιτυχημένη πληρωμή
+            subscription.save()
+
+            return redirect('payment_view')
+    else:
+        form = SubscriptionPlanForm()
+
+    return render(request, 'authentication/change_subscription.html', {'form': form})

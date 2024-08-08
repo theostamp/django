@@ -2,30 +2,51 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Προφίλ Χρήστη</h2>
-<p><strong>Όνομα χρήστη:</strong> {{ current_user.username }}</p>
-<p><strong>Email:</strong> {{ current_user.email }}</p>
+<div class="container mt-5">
+    <h2 class="mb-4">Προφίλ Χρήστη</h2>
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Στοιχεία Χρήστη</h4>
+        </div>
+        <div class="card-body">
+            <p><strong>Όνομα χρήστη:</strong> {{ current_user.username }}</p>
+            <p><strong>Email:</strong> {{ email }}</p>
+            <a href="{% url 'password_change' %}" class="btn btn-primary">Αλλαγή Κωδικού Πρόσβασης</a>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Στοιχεία Tenant</h4>
+        </div>
+        <div class="card-body">
+            {% if tenant %}
+                <p><strong>Όνομα:</strong> {{ tenant.name }}</p>
+                <p><strong>Ημερομηνία δημιουργίας:</strong> {{ tenant.created_on }}</p>
+            {% else %}
+                <p>Δεν βρέθηκαν στοιχεία tenant.</p>
+            {% endif %}
+        </div>
+    </div>
 
-<h3>Στοιχεία Tenant</h3>
-{% if tenant %}
-    <p><strong>Όνομα:</strong> {{ tenant.name }}</p>
-    <p><strong>Ημερομηνία δημιουργίας:</strong> {{ tenant.created_on }}</p>
-{% else %}
-    <p>Δεν βρέθηκαν στοιχεία tenant.</p>
-{% endif %}
-
-<h3>Στοιχεία Συνδρομής</h3>
-{% if subscription %}
-    <p><strong>Τύπος Συνδρομής:</strong> {{ subscription.subscription_type }}</p>
-    <p><strong>Ημερομηνία Έναρξης:</strong> {{ subscription.start_date }}</p>
-    <p><strong>Ημερομηνία Λήξης:</strong> {{ subscription.end_date }}</p>
-    <p><strong>Τιμή:</strong> {{ subscription.price }}</p>
-    <p><strong>Ενεργή:</strong> {{ subscription.active }}</p>
-    <p><strong>Προσωρινό Κλειδί:</strong> {{ temporary_key }}</p>
-    <a href="{% url 'select_subscription' %}" class="btn btn-warning mt-3">Αλλαγή Συνδρομής</a>
-{% else %}
-    <p>Δεν βρέθηκαν στοιχεία συνδρομής.</p>
-    <a href="{% url 'select_subscription' %}" class="btn btn-primary mt-3">Δημιουργία Συνδρομής</a>
-{% endif %}
-<a href="{% url 'password_change' %}" class="btn btn-secondary mt-3">Αλλαγή Κωδικού Πρόσβασης</a>
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Στοιχεία Συνδρομής</h4>
+        </div>
+        <div class="card-body">
+            {% if subscription %}
+                <p><strong>Τύπος Συνδρομής:</strong> {{ subscription.subscription_type }}</p>
+                <p><strong>Ημερομηνία Έναρξης:</strong> {{ subscription.start_date }}</p>
+                <p><strong>Ημερομηνία Λήξης:</strong> {{ subscription.end_date }}</p>
+                <p><strong>Τιμή:</strong> {{ subscription.price }}</p>
+                <p><strong>Ενεργή:</strong> {{ subscription.active }}</p>
+                <p><strong>Προσωρινό Κλειδί:</strong> {{ subscription.temporary_key }}</p>
+                <a href="{% url 'change_subscription' %}" class="btn btn-warning">Αλλαγή Συνδρομής</a>
+            {% else %}
+                <p>Δεν έχετε κάποια ενεργή συνδρομή.</p>
+                <a href="{% url 'create_subscription' %}" class="btn btn-primary">Δημιουργία Συνδρομής</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
 {% endblock %}
