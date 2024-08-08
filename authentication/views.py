@@ -148,52 +148,6 @@ def payment_error(request):
     return render(request, "payment/error.html", context)
 
 
-# Συναρτήσεις που πιθανόν δεν χρησιμοποιούνται
-def create_payment(request):
-    if request.method == "POST":
-        payment = paypalrestsdk.Payment({
-            "intent": "sale",
-            "payer": {
-                "payment_method": "paypal"},
-            "redirect_urls": {
-                "return_url": "http://localhost:8000/payment/execute",
-                "cancel_url": "http://localhost:8000/payment/cancel"},
-            "transactions": [{
-                "item_list": {
-                    "items": [{
-                        "name": "subscription",
-                        "sku": "001",
-                        "price": "10.00",
-                        "currency": "USD",
-                        "quantity": 1}]},
-                "amount": {
-                    "total": "10.00",
-                    "currency": "USD"},
-                "description": "Subscription payment."}]})
-
-        if payment.create():
-            for link in payment.links:
-                if link.rel == "approval_url":
-                    approval_url = str(link.href)
-                    return redirect(approval_url)
-        else:
-            return render(request, 'payment/error.html', {'error': payment.error})
-    return render(request, 'payment/create.html')
-
-
-@csrf_exempt
-def execute_payment(request):
-    payment_id = request.GET.get('paymentId')
-    payer_id = request.GET.get('PayerID')
-
-    payment = paypalrestsdk.Payment.find(payment_id)
-
-    if payment.execute({"payer_id": payer_id}):
-        return render(request, 'payment/success.html')
-    else:
-        return render(request, 'payment/error.html', {'error': payment.error})
-
-
 def generate_temporary_key():
     return ''.join(random.choices(string.digits, k=8))
 
@@ -315,9 +269,6 @@ def profile_view(request):
     try:
         tenant = Tenant.objects.get(schema_name=current_user.username)
         subscription = Subscription.objects.get(tenant=tenant)
-        license = License.objects.get(tenant=tenant)
-        hardware_id = license.hardware_id
-        computer_name = license.computer_name
 
         if not subscription.temporary_key:
             temporary_key = generate_temporary_key()
@@ -325,11 +276,17 @@ def profile_view(request):
             subscription.save()
         else:
             temporary_key = subscription.temporary_key
+
+        try:
+            license = License.objects.get(tenant=tenant)
+            hardware_id = license.hardware_id
+            computer_name = license.computer_name
+        except License.DoesNotExist:
+            pass
+
     except Tenant.DoesNotExist:
         pass
     except Subscription.DoesNotExist:
-        pass
-    except License.DoesNotExist:
         pass
 
     context = {

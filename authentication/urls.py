@@ -18,7 +18,6 @@ urlpatterns = [
     path('password_change/', views.CustomPasswordChangeView.as_view(), name='password_change'),
     path('password_change_done/', views.CustomPasswordChangeDoneView.as_view(), name='password_change_done'),
     path('stripe-webhook/', views.stripe_webhook, name='stripe-webhook'),
-    path('generate_temporary_key/', views.generate_temporary_key, name='generate_temporary_key'),
     path('activate_license/', views.activate_license, name='activate_license'),
     path('check_license/', views.check_license, name='check_license'),
     path('paypal/', views.paypal_payment, name='paypal_payment'),

@@ -3,14 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Πληρωμή μέσω PayPal</title>
+    <title>Ολοκλήρωση Πληρωμής</title>
+    {% load static %}
     <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
 </head>
 <body>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.render }}
-        <button type="submit" class="btn btn-primary">Πληρωμή</button>
-    </form>
+    <div class="container">
+        <h1>Πληρωμή με PayPal</h1>
+        <form action="{% url 'paypal_payment' %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Πληρωμή με PayPal</button>
+        </form>
+    </div>
 </body>
 </html>
