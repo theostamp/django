@@ -210,6 +210,7 @@ def user_credits(request):
     return render(request, 'authentication/user_credits.html', context)
 
 
+import datetime
 
 def create_tenant(user, plan):
     with schema_context('public'):
@@ -217,7 +218,15 @@ def create_tenant(user, plan):
             return None, "Το σχήμα αυτό υπάρχει ήδη."
 
         try:
-            tenant = Tenant(schema_name=user.username, name=user.username, subscription_type=plan)
+            # Ορίζουμε μια έγκυρη ημερομηνία για το πεδίο paid_until
+            paid_until_date = datetime.date.today() + datetime.timedelta(days=365)  # για παράδειγμα, 1 χρόνο από σήμερα
+
+            tenant = Tenant(
+                schema_name=user.username, 
+                name=user.username, 
+                subscription_type=plan,
+                paid_until=paid_until_date
+            )
             tenant.save()
             create_folders_for_tenant(user.username)
             domain_name = f"{user.username}.127.0.0.1:8003"
@@ -226,7 +235,6 @@ def create_tenant(user, plan):
             return None, "Προέκυψε σφάλμα κατά τη δημιουργία του tenant."
 
     return tenant, None
-
 
 
 
@@ -405,6 +413,11 @@ def profile_view(request):
 
     return render(request, 'authentication/profile.html', context)
 
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 @csrf_exempt
 def activate_license(request):
     temporary_key = request.POST.get('temporary_key')
@@ -416,12 +429,20 @@ def activate_license(request):
     logger.debug(f"Received hardware_id: {hardware_id}")
     logger.debug(f"Received computer_name: {computer_name}")
 
+    # Εκτύπωση στην κονσόλα
+    print("Attempting to activate license with the following details:")
+    print(f"Temporary Key: {temporary_key}")
+    print(f"Hardware ID: {hardware_id}")
+    print(f"Computer Name: {computer_name}")
+
     if not temporary_key or not hardware_id or not computer_name:
         logger.warning("Missing parameters in request")
+        print("Failed activation: Missing parameters")  # Μήνυμα στην κονσόλα
         return JsonResponse({"status": "missing_parameters"}, status=400)
 
     try:
         subscription = Subscription.objects.get(temporary_key=temporary_key)
+        logger.debug(f"Found subscription with temporary_key: {temporary_key}")
         tenant = subscription.tenant
 
         permanent_key = str(uuid.uuid4())
@@ -436,11 +457,17 @@ def activate_license(request):
         license.save()
 
         logger.debug(f"License created with permanent_key: {permanent_key}")
+        print(f"License activation successful with permanent key: {permanent_key}")  # Μήνυμα στην κονσόλα
 
         return JsonResponse({"permanent_key": permanent_key})
     except Subscription.DoesNotExist:
         logger.error(f"Subscription with temporary_key: {temporary_key} does not exist")
+        print(f"Failed activation: Subscription with temporary_key {temporary_key} does not exist")  # Μήνυμα στην κονσόλα
         return JsonResponse({"status": "invalid_temporary_key"}, status=400)
+
+
+
+
 
 @csrf_exempt
 def check_license(request):
