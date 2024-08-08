@@ -40,6 +40,10 @@ from paypalrestsdk import Payment
 from django.conf import settings
 import paypalrestsdk
 import logging
+from django.core.mail import send_mail
+from django.conf import settings
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 
 paypalrestsdk.configure({
     "mode": settings.PAYPAL_MODE,  # sandbox ή live
@@ -81,6 +85,8 @@ def paypal_payment(request):
             return render(request, 'payment/error.html', {'error': payment.error})
     return render(request, 'payment/paypal_payment.html')
 
+
+
 def paypal_execute(request):
     payment_id = request.GET.get('paymentId')
     payer_id = request.GET.get('PayerID')
@@ -88,11 +94,39 @@ def paypal_execute(request):
     payment = paypalrestsdk.Payment.find(payment_id)
 
     if payment.execute({"payer_id": payer_id}):
+        # Ενημέρωση βάσης δεδομένων
+        user = request.user
+        tenant = Tenant.objects.get(schema_name=user.username)
+        subscription = Subscription.objects.get(tenant=tenant)
+        subscription.active = True
+        subscription.save()
+
+        # Δημιουργία προσωρινού κλειδιού
+        temporary_key = generate_temporary_key()
+        subscription.temporary_key = temporary_key
+        subscription.save()
+
+        # Αποστολή email
+        subject = 'Επιτυχής Πληρωμή Συνδρομής'
+        from_email = settings.DEFAULT_FROM_EMAIL
+        to_email = [user.email, 'theostam1966@gmail.com']
+
+        context = {
+            'user': user,
+            'subscription': subscription,
+            'temporary_key': temporary_key
+        }
+
+        html_message = render_to_string('payment/success_email.html', context)
+        plain_message = strip_tags(html_message)
+
+        send_mail(subject, plain_message, from_email, to_email, html_message=html_message)
+
         return render(request, 'payment/done.html')
     else:
         return render(request, 'payment/error.html', {'error': payment.error})
 
-logger = logging.getLogger('django')
+
 
 @ensure_csrf_cookie
 def get_csrf_token(request):

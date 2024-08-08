@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Επιτυχής Πληρωμή Συνδρομής</title>
+</head>
+<body>
+    <h1>Επιτυχής Πληρωμή Συνδρομής</h1>
+    <p>Αγαπητέ {{ user.username }},</p>
+    <p>Σας ευχαριστούμε για την πληρωμή της συνδρομής σας. Παρακάτω θα βρείτε τις λεπτομέρειες της συνδρομής σας:</p>
+    <ul>
+        <li>Τύπος Συνδρομής: {{ subscription.subscription_type }}</li>
+        <li>Ημερομηνία Έναρξης: {{ subscription.start_date }}</li>
+        <li>Ημερομηνία Λήξης: {{ subscription.end_date }}</li>
+        <li>Προσωρινό Κλειδί: {{ temporary_key }}</li>
+    </ul>
+    <p>Με εκτίμηση,</p>
+    <p>Η ομάδα μας</p>
+</body>
+</html>
