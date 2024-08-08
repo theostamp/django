@@ -86,7 +86,7 @@ def paypal_payment(request):
     return render(request, 'payment/paypal_payment.html')
 
 
-
+@csrf_exempt
 def paypal_execute(request):
     payment_id = request.GET.get('paymentId')
     payer_id = request.GET.get('PayerID')
@@ -94,39 +94,29 @@ def paypal_execute(request):
     payment = paypalrestsdk.Payment.find(payment_id)
 
     if payment.execute({"payer_id": payer_id}):
-        # Ενημέρωση βάσης δεδομένων
-        user = request.user
-        tenant = Tenant.objects.get(schema_name=user.username)
-        subscription = Subscription.objects.get(tenant=tenant)
-        subscription.active = True
-        subscription.save()
+        # Ενημέρωση συνδρομής στη βάση δεδομένων
+        subscription = Subscription.objects.filter(tenant__schema_name=request.user.username).first()
+        if subscription:
+            subscription.active = True
+            subscription.save()
+
+        # Αποστολή email στον πωλητή και τον αγοραστή
+        send_mail(
+            'Επιτυχής Πληρωμή',
+            'Η πληρωμή σας ολοκληρώθηκε με επιτυχία.',
+            settings.DEFAULT_FROM_EMAIL,
+            [request.user.email],
+            fail_silently=False,
+        )
 
         # Δημιουργία προσωρινού κλειδιού
         temporary_key = generate_temporary_key()
         subscription.temporary_key = temporary_key
         subscription.save()
 
-        # Αποστολή email
-        subject = 'Επιτυχής Πληρωμή Συνδρομής'
-        from_email = settings.DEFAULT_FROM_EMAIL
-        to_email = [user.email, 'theostam1966@gmail.com']
-
-        context = {
-            'user': user,
-            'subscription': subscription,
-            'temporary_key': temporary_key
-        }
-
-        html_message = render_to_string('payment/success_email.html', context)
-        plain_message = strip_tags(html_message)
-
-        send_mail(subject, plain_message, from_email, to_email, html_message=html_message)
-
-        return render(request, 'payment/done.html')
+        return render(request, 'payment/success.html')
     else:
         return render(request, 'payment/error.html', {'error': payment.error})
-
-
 
 @ensure_csrf_cookie
 def get_csrf_token(request):
@@ -320,7 +310,7 @@ def register(request):
 
             login(request, user)
             messages.success(request, 'Ο λογαριασμός δημιουργήθηκε επιτυχώς! Παρακαλώ ολοκληρώστε την πληρωμή σας.')
-            return redirect('payment')  # Ανακατεύθυνση στη σωστή σελίδα πληρωμής
+            return redirect('payment_view')
         else:
             messages.error(request, 'Σφάλμα κατά την εγγραφή. Παρακαλώ ελέγξτε το φόρμα.')
     else:
