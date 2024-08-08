@@ -434,7 +434,6 @@ def profile_view(request):
 import logging
 
 logger = logging.getLogger(__name__)
-
 @csrf_exempt
 def activate_license(request):
     temporary_key = request.POST.get('temporary_key')
@@ -471,7 +470,6 @@ def activate_license(request):
     except Subscription.DoesNotExist:
         logger.error(f"Subscription with temporary_key: {temporary_key} does not exist")
         return JsonResponse({"status": "invalid_temporary_key"}, status=400)
-
 
 
 
@@ -548,9 +546,6 @@ def stripe_webhook(request):
     return HttpResponse(status=200)
 
 
-
-# authentication/views.py
-
 @login_required
 def create_subscription(request):
     if request.method == 'POST':
@@ -559,7 +554,6 @@ def create_subscription(request):
             plan = form.cleaned_data['plan']
             tenant = Tenant.objects.get(schema_name=request.user.username)
 
-            # Ορισμός ημερομηνιών έναρξης και λήξης
             start_date = timezone.now()
             if plan == 'trial':
                 end_date = start_date + timedelta(days=30)
@@ -592,6 +586,9 @@ def create_subscription(request):
                 subscription.price = price
                 subscription.save()
 
+            # Καταγραφή του temporary_key
+            logger.debug(f"Created subscription with temporary_key: {subscription.temporary_key}")
+
             messages.success(request, 'Η συνδρομή σας δημιουργήθηκε επιτυχώς! Παρακαλώ ολοκληρώστε την πληρωμή σας.')
             return redirect('paypal_payment')
         else:
@@ -600,9 +597,6 @@ def create_subscription(request):
         form = SubscriptionPlanForm()
 
     return render(request, 'authentication/create_subscription.html', {'form': form})
-
-
-
 
 
 @login_required

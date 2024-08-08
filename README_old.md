@@ -11,7 +11,7 @@ git reset --hard origin/main
 git init
 
 git add .
-git commit -m "32"
+git commit -m "33"
 git branch -M main
 git remote add origin https://github.com/theostamp/django.git
 git push -u origin main 
