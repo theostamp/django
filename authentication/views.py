@@ -393,6 +393,7 @@ def login_view(request):
     return render(request, 'authentication/login.html', {'form': form})
 
 
+# authentication/views.py
 
 @login_required
 def profile_view(request):
@@ -425,8 +426,6 @@ def profile_view(request):
     }
 
     return render(request, 'authentication/profile.html', context)
-
-
 
 
 
