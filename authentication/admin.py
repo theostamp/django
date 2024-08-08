@@ -2,6 +2,16 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import gettext_lazy as _
 from .models import CustomUser
+from django.contrib import admin
+from .models import Subscription
+
+@admin.register(Subscription)
+class SubscriptionAdmin(admin.ModelAdmin):
+    list_display = ('tenant', 'subscription_type', 'start_date', 'end_date', 'active')
+    search_fields = ('tenant__name', 'temporary_key')
+    list_filter = ('subscription_type', 'active', 'start_date', 'end_date')
+    ordering = ('tenant',)
+
 
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
