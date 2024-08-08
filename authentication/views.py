@@ -258,45 +258,8 @@ def register(request):
 
 
 
-@login_required
-def profile_view(request):
-    current_user = request.user
-    tenant = None
-    subscription = None
-    temporary_key = None
-    hardware_id = None
-    computer_name = None
 
-    try:
-        tenant = Tenant.objects.get(schema_name=current_user.username)
-        subscription = Subscription.objects.get(tenant=tenant)
-        license = License.objects.get(tenant=tenant)
-        hardware_id = license.hardware_id
-        computer_name = license.computer_name
 
-        if not subscription.temporary_key:
-            temporary_key = generate_temporary_key()
-            subscription.temporary_key = temporary_key
-            subscription.save()
-        else:
-            temporary_key = subscription.temporary_key
-    except Tenant.DoesNotExist:
-        pass
-    except Subscription.DoesNotExist:
-        pass
-    except License.DoesNotExist:
-        pass
-
-    context = {
-        'current_user': current_user,
-        'tenant': tenant,
-        'subscription': subscription,
-        'temporary_key': temporary_key,
-        'hardware_id': hardware_id,
-        'computer_name': computer_name,
-    }
-
-    return render(request, 'authentication/profile.html', context)
 
 
 @csrf_exempt
@@ -389,6 +352,45 @@ def user_credits(request):
     return render(request, 'authentication/user_credits.html', context)
 
 
+@login_required
+def profile_view(request):
+    current_user = request.user
+    tenant = None
+    subscription = None
+    temporary_key = None
+    hardware_id = None
+    computer_name = None
+
+    try:
+        tenant = Tenant.objects.get(schema_name=current_user.username)
+        subscription = Subscription.objects.get(tenant=tenant)
+        license = License.objects.get(tenant=tenant)
+        hardware_id = license.hardware_id
+        computer_name = license.computer_name
+
+        if not subscription.temporary_key:
+            temporary_key = generate_temporary_key()
+            subscription.temporary_key = temporary_key
+            subscription.save()
+        else:
+            temporary_key = subscription.temporary_key
+    except Tenant.DoesNotExist:
+        pass
+    except Subscription.DoesNotExist:
+        pass
+    except License.DoesNotExist:
+        pass
+
+    context = {
+        'current_user': current_user,
+        'tenant': tenant,
+        'subscription': subscription,
+        'temporary_key': temporary_key,
+        'hardware_id': hardware_id,
+        'computer_name': computer_name,
+    }
+
+    return render(request, 'authentication/profile.html', context)
 
 @login_required
 def select_subscription(request):
@@ -397,23 +399,16 @@ def select_subscription(request):
         if form.is_valid():
             plan = form.cleaned_data['plan']
             tenant = Tenant.objects.get(schema_name=request.user.username)
-            subscription = Subscription.objects.get(tenant=tenant)
-            if subscription:
-                subscription.subscription_type = plan
-                subscription.save()
-                messages.success(request, 'Η συνδρομή σας ενημερώθηκε επιτυχώς!')
+            subscription, created = Subscription.objects.get_or_create(tenant=tenant)
+            subscription.subscription_type = plan
+            if plan == 'trial':
+                subscription.end_date = timezone.now() + timedelta(days=30)
+                subscription.price = 0
             else:
-                # Δημιουργία νέας συνδρομής
-                end_date = timezone.now() + timedelta(days=30) if plan == 'trial' else timezone.now() + timedelta(days=365)
-                price = 0 if plan == 'trial' else 100
-                Subscription.objects.create(
-                    tenant=tenant,
-                    subscription_type=plan,
-                    start_date=timezone.now(),
-                    end_date=end_date,
-                    price=price
-                )
-                messages.success(request, 'Η νέα συνδρομή σας δημιουργήθηκε επιτυχώς!')
+                subscription.end_date = timezone.now() + timedelta(days(365))
+                subscription.price = 100
+            subscription.save()
+            messages.success(request, 'Η συνδρομή σας ενημερώθηκε επιτυχώς!')
             return redirect('profile')
         else:
             messages.error(request, 'Σφάλμα κατά την επιλογή συνδρομής. Παρακαλώ ελέγξτε το φόρμα.')
@@ -421,8 +416,6 @@ def select_subscription(request):
         form = SubscriptionPlanForm()
 
     return render(request, 'authentication/select_subscription.html', {'form': form})
-
-
 
 
 

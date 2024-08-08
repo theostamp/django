@@ -1,15 +1,14 @@
-<!DOCTYPE html>
-<html lang="el">
-<head>
-    <meta charset="UTF-8">
-    <title>Επιλογή Συνδρομής</title>
-</head>
-<body>
-    <h1>Επιλογή Συνδρομής</h1>
-    <form method="post" action="{% url 'select_subscription' %}">
+{% extends "base.html" %}
+
+{% block title %}Επιλογή Συνδρομής{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4">Επιλογή Συνδρομής</h1>
+    <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit">Υποβολή</button>
+        <button type="submit" class="btn btn-primary">Υποβολή</button>
     </form>
-</body>
-</html>
+</div>
+{% endblock %}
