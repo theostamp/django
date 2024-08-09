@@ -102,6 +102,8 @@ def paypal_payment(request):
             return render(request, 'payment/error.html', {'error': payment.error})
     return render(request, 'payment/paypal_payment.html')
 
+
+
 @login_required
 @csrf_exempt
 def paypal_execute(request):
@@ -119,6 +121,19 @@ def paypal_execute(request):
         if subscription:
             subscription.active = True
             subscription.save()
+
+            # Δημιουργία άδειας για τον tenant μετά την επιτυχή πληρωμή
+            tenant = Tenant.objects.get(schema_name=request.user.username)
+            expiration_date = timezone.now().date() + timedelta(days=365)  # Θέστε την ημερομηνία λήξης για 1 χρόνο
+
+            License.objects.create(
+                tenant=tenant,
+                license_key=str(uuid.uuid4()),
+                hardware_id='initial-hardware-id',
+                computer_name='initial-computer-name',
+                expiration_date=expiration_date,
+                active=True
+            )
 
         # Αποστολή email στον πωλητή και τον αγοραστή
         try:
@@ -414,7 +429,6 @@ def login_view(request):
     return render(request, 'authentication/login.html', {'form': form})
 
 @login_required
-@mac_address_required
 def profile_view(request):
     current_user = request.user
     tenant = None
@@ -437,6 +451,7 @@ def profile_view(request):
     }
 
     return render(request, 'authentication/profile.html', context)
+
 
 
 import logging
