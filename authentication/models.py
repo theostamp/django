@@ -2,18 +2,24 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django_tenants.models import TenantMixin, DomainMixin
 
+
+
+
+
 class Tenant(TenantMixin):
     name = models.CharField(max_length=100)
     paid_until = models.DateField()
     on_trial = models.BooleanField(default=True)
     created_on = models.DateField(auto_now_add=True)
-    subscription_type = models.CharField(max_length=50, blank=True, null=True)  # Προσθήκη του πεδίου subscription_type
+    subscription_type = models.CharField(max_length=50, blank=True, null=True)
 
 class Domain(DomainMixin):
     pass
 
 class CustomUser(AbstractUser):
-    email = models.EmailField(unique=True, blank=False)  # Σιγουρευτείτε ότι το email είναι υποχρεωτικό και μοναδικό
+    email = models.EmailField(unique=True, blank=False)
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, null=True, blank=True)  # Προσθήκη της συσχέτισης με το Tenant
+
 
 class Subscription(models.Model):
     tenant = models.OneToOneField(Tenant, on_delete=models.CASCADE)

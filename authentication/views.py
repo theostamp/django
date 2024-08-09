@@ -35,23 +35,20 @@ try:
 except ImportError:
     logger.error("Το πακέτο getmac δεν είναι εγκατεστημένο. Εγκαταστήστε το με `pip install getmac`.")
 
-# Ορισμός της συνάρτησης mac_address_required πριν την χρήση της.
 def mac_address_required(view_func):
     def wrapper(request, *args, **kwargs):
         current_mac = get_mac_address()
-        tenant = request.user.tenant
-
         try:
+            tenant = Tenant.objects.get(schema_name=request.user.username)
             license = License.objects.get(tenant=tenant)
             if license.mac_address == current_mac:
                 return view_func(request, *args, **kwargs)
             else:
                 return HttpResponseForbidden("Access Denied: Unauthorized MAC Address.")
-        except License.DoesNotExist:
+        except (Tenant.DoesNotExist, License.DoesNotExist):
             return HttpResponseForbidden("Access Denied: No License Found.")
     return wrapper
 
-# Ο υπόλοιπος κώδικας ακολουθεί...
 
 paypalrestsdk.configure({
     "mode": settings.PAYPAL_MODE,  # sandbox ή live
@@ -483,22 +480,6 @@ except ImportError:
     logger.error("Το πακέτο getmac δεν είναι εγκατεστημένο. Εγκαταστήστε το με `pip install getmac`.")
 
 
-
-
-def mac_address_required(view_func):
-    def wrapper(request, *args, **kwargs):
-        current_mac = get_mac_address()
-        tenant = request.user.tenant
-
-        try:
-            license = License.objects.get(tenant=tenant)
-            if license.mac_address == current_mac:
-                return view_func(request, *args, **kwargs)
-            else:
-                return HttpResponseForbidden("Access Denied: Unauthorized MAC Address.")
-        except License.DoesNotExist:
-            return HttpResponseForbidden("Access Denied: No License Found.")
-    return wrapper
 
 @csrf_exempt
 def check_license(request):
