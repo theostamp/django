@@ -25,6 +25,7 @@ from paypal.standard.forms import PayPalPaymentsForm
 from django.core.mail import send_mail  # Εισαγωγή της send_mail
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 from decouple import config
+import json
 
 # Εισαγωγή του logger
 logger = logging.getLogger(__name__)
@@ -461,16 +462,27 @@ def profile_view(request):
 import logging
 
 logger = logging.getLogger(__name__)
+
 @csrf_exempt
 def activate_license(request):
-    hardware_id = request.POST.get('hardware_id')
-    computer_name = request.POST.get('computer_name')
-    mac_address = request.POST.get('mac_address')  # Λήψη της MAC address
-
-    if not hardware_id or not computer_name or not mac_address:
-        return JsonResponse({"status": "missing_parameters"}, status=400)
-
     try:
+        # Καταγραφή του περιεχομένου του request.body
+        logger.debug(f"Received request body: {request.body}")
+
+        # Προσπάθεια αποκωδικοποίησης του JSON
+        data = json.loads(request.body)
+        logger.debug(f"Parsed JSON data: {data}")
+
+        # Λήψη των απαιτούμενων πεδίων
+        hardware_id = data.get('hardware_id')
+        computer_name = data.get('computer_name')
+        mac_address = data.get('mac_address')  # Λήψη της MAC address
+
+        if not hardware_id or not computer_name or not mac_address:
+            logger.error("Missing parameters during license activation.")
+            return JsonResponse({"status": "missing_parameters"}, status=400)
+
+        # Υπόλοιπη διαδικασία ενεργοποίησης άδειας
         tenant = request.user.tenant  # Ανακτάμε τον tenant από τον χρήστη που είναι συνδεδεμένος
 
         # Δημιουργία ενός μοναδικού κλειδιού άδειας
@@ -488,16 +500,12 @@ def activate_license(request):
         license.save()
 
         return JsonResponse({"permanent_key": permanent_key})
-    except Tenant.DoesNotExist:
-        return JsonResponse({"status": "tenant_not_found"}, status=400)
-
-
-# Ανάκτηση της MAC address - Αυτό μπορεί να απαιτήσει εγκατάσταση του πακέτου getmac.
-try:
-    from getmac import get_mac_address
-except ImportError:
-    logger.error("Το πακέτο getmac δεν είναι εγκατεστημένο. Εγκαταστήστε το με `pip install getmac`.")
-
+    except json.JSONDecodeError as e:
+        logger.error(f"JSON decode error: {e}")
+        return JsonResponse({"status": "error", "message": "Invalid JSON data"}, status=400)
+    except Exception as e:
+        logger.error(f"Unexpected error during license activation: {e}")
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
 
 @csrf_exempt
