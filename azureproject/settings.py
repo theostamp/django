@@ -68,6 +68,7 @@ SHARED_APPS = [
     # 'tenants.apps.TenantsConfig',
     'paypal.standard.ipn',
     'authentication.apps.AuthenticationConfig',
+    'tables.apps.TablesConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

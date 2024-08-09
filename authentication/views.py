@@ -26,6 +26,13 @@ from django.core.mail import send_mail  # Εισαγωγή της send_mail
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 from decouple import config
 import json
+import json
+import uuid
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
+from django.contrib.auth.decorators import login_required
+from .models import License
 
 # Εισαγωγή του logger
 logger = logging.getLogger(__name__)
@@ -448,22 +455,36 @@ def profile_view(request):
     except Subscription.DoesNotExist:
         subscription = None  # Εάν δεν υπάρχει συνδρομή, ορίζουμε το subscription σε None
 
+    # Βεβαιωθείτε ότι αυτές οι μεταβλητές λαμβάνονται σωστά, π.χ., από το αντίστοιχο model License
+    try:
+        license = License.objects.get(tenant=tenant)
+        hardware_id = license.hardware_id
+        computer_name = license.computer_name
+        mac_address = license.mac_address
+    except License.DoesNotExist:
+        hardware_id = None
+        computer_name = None
+        mac_address = None
+
     context = {
-        'current_user': current_user,
-        'tenant': tenant,
-        'subscription': subscription,
-        'email': email,
+        'hardware_id': hardware_id,
+        'computer_name': computer_name,
+        'mac_address': mac_address,
+        'email': request.user.email,
+        'tenant': request.user.tenant,  # Παράδειγμα πρόσβασης σε tenant
+        'subscription': request.user.subscription,  # Παράδειγμα πρόσβασης σε subscription
     }
 
     return render(request, 'authentication/profile.html', context)
 
 
 
-import logging
 
+import logging
 logger = logging.getLogger(__name__)
 
 @csrf_exempt
+@login_required
 def activate_license(request):
     try:
         # Καταγραφή του περιεχομένου του request.body
@@ -478,6 +499,7 @@ def activate_license(request):
         computer_name = data.get('computer_name')
         mac_address = data.get('mac_address')  # Λήψη της MAC address
 
+        # Έλεγχος για έλλειψη δεδομένων
         if not hardware_id or not computer_name or not mac_address:
             logger.error("Missing parameters during license activation.")
             return JsonResponse({"status": "missing_parameters"}, status=400)
@@ -506,6 +528,7 @@ def activate_license(request):
     except Exception as e:
         logger.error(f"Unexpected error during license activation: {e}")
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
 
 
 @csrf_exempt
