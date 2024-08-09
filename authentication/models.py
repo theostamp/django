@@ -22,12 +22,15 @@ class Subscription(models.Model):
     end_date = models.DateTimeField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     active = models.BooleanField(default=False)
-    temporary_key = models.CharField(max_length=8, blank=True, null=True)
+    # temporary_key = models.CharField(max_length=8, blank=True, null=True)  # Αφαιρούμε αυτό το πεδίο
+
 
 class License(models.Model):
     tenant = models.OneToOneField(Tenant, on_delete=models.CASCADE)
     license_key = models.CharField(max_length=255, unique=True)
     hardware_id = models.CharField(max_length=255)
     computer_name = models.CharField(max_length=255)
+    mac_address = models.CharField(max_length=17)  # Νέο πεδίο για MAC address
     expiration_date = models.DateField()
     active = models.BooleanField(default=False)
+

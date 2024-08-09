@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
 from django.contrib import messages
 from django.db import IntegrityError
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, HttpResponseForbidden  # Εισαγωγή της συνάρτησης
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.contrib.auth import get_user_model
 from django_tenants.utils import schema_context
@@ -17,8 +17,6 @@ from .forms import CustomUserCreationForm, PaymentForm, SubscriptionPlanForm, Cu
 from .models import Tenant, Domain, Subscription, CustomUser, License
 from django.utils import timezone
 from datetime import timedelta
-import random
-import string
 import uuid
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 from django.urls import reverse_lazy
@@ -105,11 +103,6 @@ def paypal_execute(request):
             )
         except Exception as e:
             logger.error(f"Failed to send email: {e}")
-
-        # Δημιουργία προσωρινού κλειδιού
-        temporary_key = generate_temporary_key()
-        subscription.temporary_key = temporary_key
-        subscription.save()
 
         return render(request, 'payment/success.html')
     else:
@@ -235,9 +228,6 @@ def create_tenant(user, plan):
             return None, "Προέκυψε σφάλμα κατά τη δημιουργία του tenant."
 
     return tenant, None
-
-
-
 
 def create_folders_for_tenant(tenant_name):
     base_tenant_folder = settings.TENANTS_BASE_FOLDER
@@ -396,22 +386,16 @@ def login_view(request):
     return render(request, 'authentication/login.html', {'form': form})
 
 @login_required
+@mac_address_required
 def profile_view(request):
     current_user = request.user
     tenant = None
     subscription = None
-    temporary_key = None
     email = current_user.email  # Χρησιμοποιούμε το email από τον τρέχοντα χρήστη
 
     try:
         tenant = Tenant.objects.get(schema_name=current_user.username)
         subscription = Subscription.objects.get(tenant=tenant)
-        if not subscription.temporary_key:
-            temporary_key = generate_temporary_key()
-            subscription.temporary_key = temporary_key
-            subscription.save()
-        else:
-            temporary_key = subscription.temporary_key
     except Tenant.DoesNotExist:
         pass
     except Subscription.DoesNotExist:
@@ -421,7 +405,6 @@ def profile_view(request):
         'current_user': current_user,
         'tenant': tenant,
         'subscription': subscription,
-        'temporary_key': temporary_key,
         'email': email,
     }
 
@@ -433,49 +416,58 @@ import logging
 logger = logging.getLogger(__name__)
 @csrf_exempt
 def activate_license(request):
-    temporary_key = request.POST.get('temporary_key')
     hardware_id = request.POST.get('hardware_id')
     computer_name = request.POST.get('computer_name')
+    mac_address = request.POST.get('mac_address')  # Λήψη της MAC address
 
-    # Καταγραφή των εισερχόμενων δεδομένων
-    logger.debug(f"Received temporary_key: {temporary_key}")
-    logger.debug(f"Received hardware_id: {hardware_id}")
-    logger.debug(f"Received computer_name: {computer_name}")
-
-    if not temporary_key or not hardware_id or not computer_name:
-        logger.warning("Missing parameters in request")
+    if not hardware_id or not computer_name or not mac_address:
         return JsonResponse({"status": "missing_parameters"}, status=400)
 
     try:
-        subscription = Subscription.objects.get(temporary_key=temporary_key)
-        logger.debug(f"Found subscription with temporary_key: {temporary_key}, tenant: {subscription.tenant}, active: {subscription.active}")
+        tenant = request.user.tenant  # Ανακτάμε τον tenant από τον χρήστη που είναι συνδεδεμένος
 
-        # Ελέγξτε αν η συνδρομή είναι ενεργή
-        if not subscription.active:
-            logger.warning(f"Subscription with temporary_key: {temporary_key} is not active.")
-            return JsonResponse({"status": "inactive_subscription"}, status=400)
-
-        tenant = subscription.tenant
-
+        # Δημιουργία ενός μοναδικού κλειδιού άδειας
         permanent_key = str(uuid.uuid4())
-        expiration_date = timezone.now().date() + timedelta(days=30)
+        expiration_date = timezone.now().date() + timedelta(days=365)  # Θέστε την ημερομηνία λήξης για 1 χρόνο
 
+        # Αναζήτηση ή δημιουργία εγγραφής για την άδεια του tenant
         license, created = License.objects.get_or_create(tenant=tenant)
         license.license_key = permanent_key
         license.hardware_id = hardware_id
         license.computer_name = computer_name
+        license.mac_address = mac_address  # Αποθήκευση της MAC address
         license.expiration_date = expiration_date
         license.active = True
         license.save()
 
-        logger.debug(f"License created with permanent_key: {permanent_key}")
         return JsonResponse({"permanent_key": permanent_key})
-    except Subscription.DoesNotExist:
-        logger.error(f"Subscription with temporary_key: {temporary_key} does not exist. All subscriptions: {Subscription.objects.all()}")
-        return JsonResponse({"status": "invalid_temporary_key"}, status=400)
+    except Tenant.DoesNotExist:
+        return JsonResponse({"status": "tenant_not_found"}, status=400)
+
+
+# Ανάκτηση της MAC address - Αυτό μπορεί να απαιτήσει εγκατάσταση του πακέτου getmac.
+try:
+    from getmac import get_mac_address
+except ImportError:
+    logger.error("Το πακέτο getmac δεν είναι εγκατεστημένο. Εγκαταστήστε το με `pip install getmac`.")
 
 
 
+
+def mac_address_required(view_func):
+    def wrapper(request, *args, **kwargs):
+        current_mac = get_mac_address()
+        tenant = request.user.tenant
+
+        try:
+            license = License.objects.get(tenant=tenant)
+            if license.mac_address == current_mac:
+                return view_func(request, *args, **kwargs)
+            else:
+                return HttpResponseForbidden("Access Denied: Unauthorized MAC Address.")
+        except License.DoesNotExist:
+            return HttpResponseForbidden("Access Denied: No License Found.")
+    return wrapper
 
 @csrf_exempt
 def check_license(request):
@@ -493,9 +485,6 @@ def check_license(request):
             return JsonResponse({"status": "expired"})
     except License.DoesNotExist:
         return JsonResponse({"status": "no_license"})
-
-def generate_temporary_key():
-    return ''.join(random.choices(string.digits, k=8))
 
 class CustomPasswordChangeView(PasswordChangeView):
     template_name = 'authentication/password_change.html'
@@ -537,8 +526,6 @@ def stripe_webhook(request):
     if event['type'] == 'payment_intent.succeeded':
         payment_intent = event['data']['object']
         customer_id = payment_intent['customer']
-
-        temporary_key = str(uuid.uuid4())[:8]
 
     elif event['type'] == 'payment_method.attached':
         payment_method = event['data']['object']
@@ -588,9 +575,6 @@ def create_subscription(request):
                 subscription.subscription_type = plan
                 subscription.price = price
                 subscription.save()
-
-            # Καταγραφή του temporary_key
-            logger.debug(f"Created subscription with temporary_key: {subscription.temporary_key}")
 
             messages.success(request, 'Η συνδρομή σας δημιουργήθηκε επιτυχώς! Παρακαλώ ολοκληρώστε την πληρωμή σας.')
             return redirect('paypal_payment')
