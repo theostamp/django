@@ -248,29 +248,6 @@ def user_credits(request):
 
 import datetime
 
-def create_tenant(user, plan):
-    with schema_context('public'):
-        if Tenant.objects.filter(schema_name=user.username).exists():
-            return None, "Το σχήμα αυτό υπάρχει ήδη."
-
-        try:
-            # Ορίζουμε μια έγκυρη ημερομηνία για το πεδίο paid_until
-            paid_until_date = datetime.date.today() + datetime.timedelta(days=365)  # για παράδειγμα, 1 χρόνο από σήμερα
-
-            tenant = Tenant(
-                schema_name=user.username, 
-                name=user.username, 
-                subscription_type=plan,
-                paid_until=paid_until_date
-            )
-            tenant.save()
-            create_folders_for_tenant(user.username)
-            domain_name = f"{user.username}.127.0.0.1:8003"
-            Domain.objects.create(domain=domain_name, tenant=tenant, is_primary=True)
-        except IntegrityError:
-            return None, "Προέκυψε σφάλμα κατά τη δημιουργία του tenant."
-
-    return tenant, None
 
 def create_folders_for_tenant(tenant_name):
     base_tenant_folder = settings.TENANTS_BASE_FOLDER
@@ -345,29 +322,33 @@ def register(request):
 
     return render(request, 'authentication/register.html', {'form': form})
 
+
+
+from django_tenants.utils import tenant_context
+from .models import Tenant, Domain
+
 def create_tenant(user, plan):
-    with schema_context('public'):
-        if Tenant.objects.filter(schema_name=user.username).exists():
-            return None, "Το σχήμα αυτό υπάρχει ήδη."
+    tenant = Tenant(
+        name=user.username,
+        schema_name=user.username,  # Όνομα schema
+        paid_until=datetime.date.today() + datetime.timedelta(days=365),
+        on_trial=False,
+    )
+    tenant.save()
 
-        try:
-            paid_until_date = datetime.date.today() + datetime.timedelta(days=365)  # π.χ., 1 χρόνο από σήμερα
+    # Δημιουργία domain
+    domain = Domain()
+    domain.domain = f'{user.username}.localhost'
+    domain.tenant = tenant
+    domain.is_primary = True
+    domain.save()
 
-            tenant = Tenant(
-                schema_name=user.username, 
-                name=user.username, 
-                subscription_type=plan,
-                paid_until=paid_until_date
-            )
-            tenant.save()
-
-            # Δημιουργία domain
-            domain_name = f"{user.username}.localhost"
-            Domain.objects.create(domain=domain_name, tenant=tenant, is_primary=True)
-        except IntegrityError:
-            return None, "Προέκυψε σφάλμα κατά τη δημιουργία του tenant."
-
+    # Επιστροφή του tenant για επιβεβαίωση
     return tenant, None
+
+
+
+
 
 
 @login_required
