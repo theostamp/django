@@ -23,9 +23,35 @@ from django.urls import reverse_lazy
 from decouple import config
 from paypal.standard.forms import PayPalPaymentsForm
 from django.core.mail import send_mail  # Εισαγωγή της send_mail
+from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
+from decouple import config
 
 # Εισαγωγή του logger
-logger = logging.getLogger('django')
+logger = logging.getLogger(__name__)
+
+# Ανάκτηση της MAC address - Αυτό μπορεί να απαιτήσει εγκατάσταση του πακέτου getmac.
+try:
+    from getmac import get_mac_address
+except ImportError:
+    logger.error("Το πακέτο getmac δεν είναι εγκατεστημένο. Εγκαταστήστε το με `pip install getmac`.")
+
+# Ορισμός της συνάρτησης mac_address_required πριν την χρήση της.
+def mac_address_required(view_func):
+    def wrapper(request, *args, **kwargs):
+        current_mac = get_mac_address()
+        tenant = request.user.tenant
+
+        try:
+            license = License.objects.get(tenant=tenant)
+            if license.mac_address == current_mac:
+                return view_func(request, *args, **kwargs)
+            else:
+                return HttpResponseForbidden("Access Denied: Unauthorized MAC Address.")
+        except License.DoesNotExist:
+            return HttpResponseForbidden("Access Denied: No License Found.")
+    return wrapper
+
+# Ο υπόλοιπος κώδικας ακολουθεί...
 
 paypalrestsdk.configure({
     "mode": settings.PAYPAL_MODE,  # sandbox ή live
@@ -33,12 +59,17 @@ paypalrestsdk.configure({
     "client_secret": settings.PAYPAL_CLIENT_SECRET
 })
 
+# Παράδειγμα χρήσης του logger:
 def create_user(username, email, password):
     User = get_user_model()
     if User.objects.filter(username=username).exists():
+        logger.warning("Το όνομα χρήστη υπάρχει ήδη.")
         return None, 'Το όνομα χρήστη υπάρχει ήδη.'
     user = User.objects.create_user(username=username, email=email, password=password)
+    logger.info("Ο χρήστης δημιουργήθηκε επιτυχώς.")
     return user, None
+
+
 
 @login_required
 def paypal_payment(request):
