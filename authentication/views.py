@@ -345,6 +345,29 @@ def register(request):
 
     return render(request, 'authentication/register.html', {'form': form})
 
+def create_tenant(user, plan):
+    with schema_context('public'):
+        if Tenant.objects.filter(schema_name=user.username).exists():
+            return None, "Το σχήμα αυτό υπάρχει ήδη."
+
+        try:
+            paid_until_date = datetime.date.today() + datetime.timedelta(days=365)  # π.χ., 1 χρόνο από σήμερα
+
+            tenant = Tenant(
+                schema_name=user.username, 
+                name=user.username, 
+                subscription_type=plan,
+                paid_until=paid_until_date
+            )
+            tenant.save()
+
+            # Δημιουργία domain
+            domain_name = f"{user.username}.localhost"
+            Domain.objects.create(domain=domain_name, tenant=tenant, is_primary=True)
+        except IntegrityError:
+            return None, "Προέκυψε σφάλμα κατά τη δημιουργία του tenant."
+
+    return tenant, None
 
 
 @login_required
