@@ -172,7 +172,7 @@ def test_read_file(request):
         raise Http404("File not found")
 
 def index(request):
-    return render(request, '/authentication/index.html')
+    return render(request, 'authentication/index.html')
 
 @csrf_exempt
 def check_for_refresh(request):
