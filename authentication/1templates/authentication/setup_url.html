@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ρύθμιση URL Tenant</title>
+</head>
+<body>
+    <h2>Ρύθμιση URL Tenant</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Υποβολή</button>
+    </form>
+</body>
+</html>

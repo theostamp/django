@@ -1,0 +1,311 @@
+<html lang="en">
+<head>
+    <title>Order Summary</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="View and manage your orders ">
+</head>
+<body>
+    <div class="container">
+        <h1>Order Summary</h1>
+        {% csrf_token %}
+        {% load static %}
+        {% if sorted_orders_by_table %}
+        {% for table_number, details in sorted_orders_by_table.items %}
+        <h2>Table {{ table_number }} - Waiter: {{ details.waiter }}</h2>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Product Description</th>
+                    <th>Quantity</th>
+                    <th>Waits for..</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in details.orders %}
+                <tr class="order-row" data-order-id="{{ order.order_id }}">
+                    <td>{{ order.product_description }}</td>
+                    <td>{{ order.quantity }}</td>
+                    <td>{{ order.time_passed }} min</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endfor %}
+        <button id="submit-orders">Αποστολή</button>
+        <button id="cancel-orders" class="cancel-button">Ακύρωση</button>
+
+        {% else %}
+        <div style="text-align:center; padding-top:30%; color:#007bff; font-size:large "></div>
+        <h2>No active orders to prepare</h2>
+        {% comment %} <img src="{% static 'images/noorder.webp' %}" alt="Success" alt="Καμία Παραγγελία" width="300" height="300" style="display: block; margin: auto;"> {% endcomment %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <script>
+        function saveSelectedOrders() {
+            const selectedOrders = Array.from(document.querySelectorAll('.order-row.selected')).map(row => row.getAttribute('data-order-id'));
+            localStorage.setItem('selectedOrders', JSON.stringify(selectedOrders));
+        }
+
+        function restoreSelectedOrders() {
+            const selectedOrders = JSON.parse(localStorage.getItem('selectedOrders')) || [];
+            selectedOrders.forEach(orderId => {
+                const row = document.querySelector(`.order-row[data-order-id="${orderId}"]`);
+                if (row) {
+                    row.classList.add('selected');
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            restoreSelectedOrders();
+            
+            const submitBtn = document.getElementById('submit-orders');
+            const cancelBtn = document.getElementById('cancel-orders');
+            const orderRows = document.querySelectorAll('.order-row');
+
+            orderRows.forEach(row => {
+                row.addEventListener('click', function () {
+                    this.classList.toggle('selected');
+                    saveSelectedOrders();
+                });
+            });
+
+            submitBtn.addEventListener('click', function () {
+                let selectedOrders = Array.from(orderRows)
+                    .filter(row => row.classList.contains('selected'))
+                    .map(row => ({ order_id: row.getAttribute('data-order-id'), order_done: 1 }));
+
+                if (selectedOrders.length === 0) {
+                    alert("Δεν έχουν επιλεγεί παραγγελίες.");
+                    return;
+                }
+
+                fetch('/update_order/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(selectedOrders)
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(data);
+                    localStorage.removeItem('selectedOrders');
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error('Πρόβλημα με το request:', error);
+                    alert("Υπήρξε ένα πρόβλημα κατά την ενημέρωση των παραγγελιών. Παρακαλώ δοκιμάστε ξανά.");
+                });
+            });
+
+            cancelBtn.addEventListener('click', function () {
+                let selectedOrders = Array.from(orderRows)
+                    .filter(row => row.classList.contains('selected'))
+                    .map(row => ({ order_id: row.getAttribute('data-order-id'), order_done: -1 }));
+
+                if (selectedOrders.length === 0) {
+                    alert("Δεν έχουν επιλεγεί παραγγελίες για ακύρωση.");
+                    return;
+                }
+
+                fetch('/cancel_order/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(selectedOrders)
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(data);
+                    localStorage.removeItem('selectedOrders');
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error('Πρόβλημα με το request:', error);
+                    alert("Υπήρξε ένα πρόβλημα κατά την ακύρωση των παραγγελιών. Παρακαλώ δοκιμάστε ξανά.");
+                });
+            });
+
+            // Προσθήκη αυτόματης ανανέωσης κάθε 1 λεπτό (60000 χιλιοστά του δευτερολέπτου)
+            setInterval(function () {
+                saveSelectedOrders();
+                location.reload();
+            }, 30000); // Ανανεώνει τη σελίδα κάθε 60 δευτερόλεπτα
+
+        });
+
+        setInterval(function () {
+            fetch('/check_for_refresh/')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.refresh) {
+                        saveSelectedOrders();
+                        location.reload();
+                    }
+                });
+        }, 10000); // Επανέλεγχος κάθε 10 δευτερόλεπτα
+    </script>
+</body>
+
+<style>
+    .container {
+        width: 98%;
+        margin: auto;
+        overflow: visible;
+        padding: 1%;
+    }
+
+    /* Βελτίωση της διάταξης των κουμπιών */
+    .d-flex {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .responsive-image {
+        width: 80%;
+        height: auto;
+        align-items: center;
+    }
+
+    body {
+        font-family: 'Tahoma', sans-serif;
+        color: #333;
+        background-color: #f0f0f0;
+        font-size: smaller;
+    }
+
+    h1 {
+        color: #009e84;
+        font-size: large;
+        /* Σκούρο μπλε */
+    }
+
+    h2 {
+        color: #0056b3;
+        font-size: 15px;
+       
+        /* Σκούρο μπλε */
+    }
+
+    .header {
+        background-color: #007bff;
+        /* Φωτεινό μπλε */
+        color: white;
+        padding: 10px;
+        text-align: center;
+        font-size: small;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th,
+    td {
+        padding: 8px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+        font-size: small;
+    }
+
+    th {
+        background-color: #0056b3;
+        /* Σκούρο μπλε */
+        color: white;
+        font-size: small;
+    }
+
+    tr:hover {
+        background-color: #19fafa;
+        font-size: small;
+    }
+
+    .button {
+        background-color: #ff6600;
+        /* Πορτοκαλί */
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .button:hover {
+        background-color: #e65c00;
+        /* Σκουρότερο πορτοκαλί */
+    }
+
+    .form-control {
+        padding: 10px;
+        margin: 10px 0;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: small;
+    }
+
+    @media (max-width: 600px) {
+        .header,
+        .button,
+        .form-control {
+            width: 100%;
+        }
+    }
+
+    .selected-row {
+        background-color: #cce5ff;
+        font-size: small;
+        /* Ανοιχτό μπλε */
+    }
+
+    tr:hover {
+        background-color: #19fafa;
+        font-size: small;
+        /* Χρώμα για hover */
+    }
+
+    .order-row.selected,
+    .order-row.selected:hover {
+        background-color: #cce5ff;
+        /* Ανοιχτό μπλε για επιλεγμένη γραμμή */
+        font-size: small;
+    }
+
+    #submit-orders {
+        background-color: #28a745;
+        /* Πράσινο χρώμα */
+        color: white;
+        padding: 10px 20px;
+        margin-top: 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        align-items: center;
+        box-shadow: #0a4b18;
+    }
+
+    #submit-orders:hover {
+        background-color: #0a4b18;
+        /* Σκουρότερο πράσινο */
+    }
+
+    .cancel-button {
+        float: right;
+        /* Στέλνει το κουμπί στη δεξιά πλευρά */
+        background-color: rgb(124, 18, 18);
+        /* Προαιρετικό: Ρυθμίστε το χρώμα του κουμπιού */
+        color: white;
+        /* Προαιρετικό: Ρυθμίστε το χρώμα του κειμένου */
+        /* Προσθέστε εδώ περαιτέρω μορφοποιήσεις αν χρειάζεται */
+    }
+</style>
+</html>

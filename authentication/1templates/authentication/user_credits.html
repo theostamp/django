@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Credits</title>
+</head>
+<body>
+    <h2>User Credits</h2>
+    <p>Username: {{ current_user.username }}</p>
+    <p>Email: {{ current_user.email }}</p>
+
+    <h3>Tenant Domains</h3>
+    <ul>
+        {% for domain in tenant_domains %}
+        <li>{{ domain.domain }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

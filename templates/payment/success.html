@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Πληρωμή Επιτυχής</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Tahoma, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .success-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+        .success-container h1 {
+            margin-bottom: 20px;
+            color: #28a745;
+        }
+        .success-container p {
+            margin: 10px 0;
+        }
+        .btn {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container content">
+        <div class="success-container">
+            <h1>Πληρωμή Επιτυχής</h1>
+            <p>Η πληρωμή σας ολοκληρώθηκε με επιτυχία. Ευχαριστούμε!</p>
+            <a href="{% url 'profile' %}" class="btn btn-primary">Επιστροφή στο Προφίλ</a>
+        </div>
+    </div>
+</body>
+</html>

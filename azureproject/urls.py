@@ -7,6 +7,7 @@ from authentication.views import index, payment_error
 urlpatterns = [
     path('', index, name='index'),
     path('tables/', include('tables.urls')),
+    path('table_selection/', include('tables.urls')),
     path('admin/', admin.site.urls),
     path('authentication/', include('authentication.urls')),
     path('get-csrf-token/', include('authentication.urls')),

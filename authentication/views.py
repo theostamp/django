@@ -440,6 +440,8 @@ def login_view(request):
 
     return render(request, 'authentication/login.html', {'form': form})
 
+
+
 @login_required
 def profile_view(request):
     current_user = request.user
@@ -451,7 +453,7 @@ def profile_view(request):
         tenant = Tenant.objects.get(schema_name=current_user.username)
         subscription = Subscription.objects.get(tenant=tenant)
     except Tenant.DoesNotExist:
-        pass
+        tenant = None
     except Subscription.DoesNotExist:
         subscription = None  # Εάν δεν υπάρχει συνδρομή, ορίζουμε το subscription σε None
 
@@ -470,9 +472,9 @@ def profile_view(request):
         'hardware_id': hardware_id,
         'computer_name': computer_name,
         'mac_address': mac_address,
-        'email': request.user.email,
-        'tenant': request.user.tenant,  # Παράδειγμα πρόσβασης σε tenant
-        'subscription': request.user.subscription,  # Παράδειγμα πρόσβασης σε subscription
+        'email': email,
+        'tenant': tenant,  # Παράδειγμα πρόσβασης σε tenant
+        'subscription': subscription,  # Παράδειγμα πρόσβασης σε subscription
     }
 
     return render(request, 'authentication/profile.html', context)

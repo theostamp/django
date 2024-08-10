@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <title>Overview</title>
+    <script>
+    window.onload = function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const waiterName = urlParams.get('name');
+        const tenant = getTenantFromHostname();
+        let isDragMode = false;
+
+        console.log(`Waiter Name: ${waiterName}`);
+        console.log(`Tenant: ${tenant}`);
+
+        if (waiterName) {
+            localStorage.setItem('waiterName', waiterName);
+            updateHeader(waiterName, tenant);
+        } else {
+            updateHeader('', tenant);
+        }
+
+        if (tenant) {
+            console.log(`Tenant found: ${tenant}`);
+            loadTables(tenant);
+        } else {
+            console.error('Tenant not found in hostname.');
+        }
+
+        window.addEventListener('resize', () => {
+            const tenant = getTenantFromHostname();
+            loadTables(tenant);
+        });
+
+        resizeContainer();
+        window.addEventListener('resize', resizeContainer);
+
+        document.getElementById('toggle-drag-mode').addEventListener('click', () => {
+            isDragMode = !isDragMode;
+            console.log(`Drag mode: ${isDragMode}`);
+            toggleDragMode(isDragMode);
+            document.getElementById('toggle-drag-mode').classList.toggle('active', isDragMode);
+        });
+
+        document.getElementById('arrange-buttons').addEventListener('click', arrangeButtons);
+
+        function enableDrag(element) {
+            element.draggable = true;
+            element.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', e.target.id);
+            });
+        }
+
+        function toggleDragMode(enable) {
+            const buttons = document.querySelectorAll('.tables-container a');
+            buttons.forEach(button => {
+                if (enable) {
+                    enableDrag(button);
+                    button.style.border = '4px dashed yellow';
+                } else {
+                    button.draggable = false;
+                    button.style.border = 'none';
+                }
+            });
+
+            const container = document.querySelector('.tables-container');
+            if (enable) {
+                container.addEventListener('dragover', dragOverHandler);
+                container.addEventListener('drop', dropHandler);
+            } else {
+                container.removeEventListener('dragover', dragOverHandler);
+                container.removeEventListener('drop', dropHandler);
+            }
+        }
+
+        function dragOverHandler(event) {
+            event.preventDefault();
+        }
+
+        function dropHandler(event) {
+            event.preventDefault();
+            const id = event.dataTransfer.getData('text/plain');
+            const draggableElement = document.getElementById(id);
+            const rect = event.currentTarget.getBoundingClientRect();
+            const x = event.clientX - rect.left - draggableElement.clientWidth / 2;
+            const y = event.clientY - rect.top - draggableElement.clientHeight / 2;
+            draggableElement.style.left = `${x}px`;
+            draggableElement.style.top = `${y}px`;
+            event.dataTransfer.clearData();
+            saveButtonPosition(id, x, y);
+        }
+
+        async function saveButtonPosition(id, x, y) {
+            const positions = JSON.parse(localStorage.getItem('buttonPositions')) || {};
+            positions[id] = { x, y };
+            localStorage.setItem('buttonPositions', JSON.stringify(positions));
+            try {
+                await fetch('/save_positions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(positions)
+                });
+            } catch (error) {
+                console.error('Error saving positions:', error);
+            }
+        }
+
+        async function loadButtonPositions() {
+            try {
+                const response = await fetch('/load_positions');
+                if (!response.ok) {
+                    throw new Error(`Network response was not ok. Status: ${response.status}`);
+                }
+                const positions = await response.json();
+                localStorage.setItem('buttonPositions', JSON.stringify(positions));
+                return positions;
+            } catch (error) {
+                console.error('Error loading positions:', error);
+                return JSON.parse(localStorage.getItem('buttonPositions')) || {};
+            }
+        }
+
+        async function loadTables(tenant) {
+            try {
+                const url = `/tenants_folders/${tenant}_upload_json/occupied_tables.json`;
+                console.log(`Fetching data from: ${url}`);
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`Network response was not ok. Status: ${response.status}`);
+                }
+                const tables = await response.json();
+                console.log('Tables data:', tables);
+                await loadTimeDiffs(tables, tenant);
+                const reservations = await loadReservations(tenant);
+                const positions = await loadButtonPositions();
+                createTableButtons(tables, positions, reservations);
+            } catch (error) {
+                console.error('Error loading tables:', error);
+            }
+        }
+
+        async function loadReservations(tenant) {
+            try {
+                const url = `/tenants_folders/${tenant}_upload_json/reservations.json`;
+                console.log(`Fetching reservations data from: ${url}`);
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`Network response was not ok. Status: ${response.status}`);
+                }
+                const data = await response.json();
+                console.log('Reservations data:', data);
+
+                if (!Array.isArray(data.reservations)) {
+                    throw new TypeError('Reservations data is not an array');
+                }
+
+                const reservations = data.reservations;
+                const today = new Date().toISOString().split('T')[0];
+                const todaysReservations = reservations.filter(reservation => reservation.date === today);
+
+                if (todaysReservations.length > 0) {
+                    const tableNumbers = todaysReservations.map(reservation => reservation.table_number).join(', ');
+                    console.log(`Τα τραπέζια ${tableNumbers} είναι κλεισμένα για σήμερα.`);
+                } else {
+                    console.log("Δεν υπάρχουν κλεισμένα τραπέζια για σήμερα.");
+                }
+
+                return todaysReservations;
+            } catch (error) {
+                console.error('Error loading reservations:', error);
+                return [];
+            }
+        }
+
+        async function loadTimeDiffs(tables, tenant) {
+            try {
+                const url = `/list_order_files/${tenant}/`;
+                console.log(`Fetching order files from: ${url}`);
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`Network response was not ok. Status: ${response.status}`);
+                }
+                const files = await response.json();
+                console.log('Order files:', files);
+
+                for (const table of tables.tables) {
+                    const tableNumber = table.table_number;
+                    const matchingFiles = files.files.filter(file => file.includes(`order_table_${tableNumber}_`));
+                    if (matchingFiles.length > 0) {
+                        const pendingOrders = [];
+                        for (const matchingFile of matchingFiles) {
+                            const fileUrl = `/tenants_folders/${tenant}_received_orders/${matchingFile}`;
+                            console.log(`Fetching order data from: ${fileUrl}`);
+                            const fileResponse = await fetch(fileUrl);
+                            if (fileResponse.ok) {
+                                const orderData = await fileResponse.json();
+                                console.log(`Order data for table ${tableNumber}:`, orderData);
+                                const timeDiff = orderData.time_diff;
+                                const orderDone = orderData.order_done;
+                                if (timeDiff !== undefined) {
+                                    table.time_diff = convertMinutesToHHMM(timeDiff);
+                                }
+                                if (!orderDone) {
+                                    pendingOrders.push(orderData);
+                                }
+                            } else {
+                                console.log(`File ${matchingFile} not found.`);
+                                table.time_diff = 'N/A';
+                                table.order_status = null;
+                            }
+                        }
+                        if (pendingOrders.length > 0) {
+                            table.order_status = `PENDING ${pendingOrders.length}`;
+                        } else {
+                            table.order_status = null;
+                        }
+                        console.log(`Table ${tableNumber} status: ${table.order_status}`);
+                    } else {
+                        console.log(`No matching file found for table ${tableNumber}.`);
+                        table.time_diff = 'N/A';
+                        table.order_status = null;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading time_diff:', error);
+                tables.tables.forEach(table => {
+                    table.time_diff = 'N/A';
+                    table.order_status = null;
+                });
+            }
+        }
+
+        function convertMinutesToHHMM(minutes) {
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+        }
+
+        function convertDurationToHHMM(duration) {
+            const parts = duration.split(':');
+            if (parts.length >= 2) {
+                const hours = parseInt(parts[0], 10);
+                const minutes = parseInt(parts[1], 10);
+                return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+            }
+            return duration;
+        }
+
+        function createTableButtons(tables, positions, reservations) {
+            console.log('Creating table buttons...');
+            const container = document.querySelector('.tables-container');
+            container.innerHTML = '';
+            const containerWidth = container.clientWidth;
+            const containerHeight = container.clientHeight;
+            const buttonSize = Math.min(containerWidth, containerHeight) / 5;
+            const fontSize = buttonSize / 5;
+            const margin = buttonSize / 8;
+
+            tables.tables.forEach((table) => {
+                console.log(`Creating button for table: ${table.table_number}`);
+                const button = document.createElement('a');
+                button.id = `table-${table.table_number}`;
+                button.href = `/table_orders/${getTenantFromHostname()}/${table.table_number}/`;
+
+                button.style.display = 'flex';
+                button.style.flexDirection = 'column';
+                button.style.justifyContent = 'center';
+                button.style.alignItems = 'center';
+                button.style.color = 'white';
+                button.style.textDecoration = 'none';
+                button.style.transition = 'all 0.3s ease';
+                button.style.padding = '10px';
+                button.style.borderRadius = '5px';
+                button.style.position = 'absolute';
+                button.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.6)';
+
+                if (positions[button.id]) {
+                    button.style.left = `${positions[button.id].x}px`;
+                    button.style.top = `${positions[button.id].y}px`;
+                } else {
+                    button.style.left = `${(table.center_coordinates[0] / 800) * containerWidth - buttonSize / 2}px`;
+                    button.style.top = `${(table.center_coordinates[1] / 600) * containerHeight - buttonSize / 2}px`;
+                }
+
+                button.style.width = `${buttonSize}px`;
+                button.style.height = `${buttonSize}px`;
+                button.style.margin = `${margin}px`;
+
+                const tableNumberDiv = document.createElement('div');
+                tableNumberDiv.className = 'table-number';
+                tableNumberDiv.style.fontSize = `${fontSize}px`;
+                tableNumberDiv.textContent = `${table.table_number}`;
+                button.appendChild(tableNumberDiv);
+
+                if (table.time_diff && table.time_diff !== 'N/A') {
+                    console.log(`Table ${table.table_number} has time_diff: ${table.time_diff}`);
+                    const timeDiffDiv = document.createElement('div');
+                    timeDiffDiv.className = 'time-diff';
+                    timeDiffDiv.style.fontSize = `${fontSize * 0.6}px`;
+                    timeDiffDiv.textContent = `Served ${table.time_diff}`;
+                    button.appendChild(timeDiffDiv);
+                    button.style.backgroundColor = '#4CAF50';
+                } else if (table.duration && table.duration !== '0' && table.time_diff === 'N/A') {
+                    const tableDurationDiv = document.createElement('div');
+                    tableDurationDiv.className = 'table-duration';
+                    tableDurationDiv.style.fontSize = `${fontSize * 0.6}px`;
+                    tableDurationDiv.textContent = convertDurationToHHMM(table.duration);
+                    button.appendChild(tableDurationDiv);
+                    button.style.backgroundColor = '#FF5722';
+                } else if (!table.duration && table.time_diff === 'N/A') {
+                    button.style.backgroundColor = '#FFFFFF';
+                    button.style.color = '#000';
+                }
+
+                if (table.order_status) {
+                    console.log(`Table ${table.table_number} has order status: ${table.order_status}`);
+                    const statusBannerDiv = document.createElement('div');
+                    statusBannerDiv.className = 'status-banner';
+                    statusBannerDiv.style.fontSize = `${fontSize * 0.6}px`;
+                    statusBannerDiv.style.position = 'absolute';
+                    statusBannerDiv.style.bottom = '0';
+                    statusBannerDiv.style.width = '100%';
+                    statusBannerDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+                    statusBannerDiv.style.color = '#FFF';
+                    statusBannerDiv.style.textAlign = 'center';
+                    statusBannerDiv.textContent = table.order_status;
+                    button.appendChild(statusBannerDiv);
+                }
+
+                const reservation = reservations.find(res => res.table_number === table.table_number);
+                if (reservation) {
+                    console.log(`Table ${table.table_number} is reserved.`);
+                    const reservedBannerDiv = document.createElement('div');
+                    reservedBannerDiv.className = 'reserved-banner';
+                    reservedBannerDiv.style.fontSize = `${fontSize * 0.6}px`;
+                    reservedBannerDiv.style.position = 'absolute';
+                    reservedBannerDiv.style.top = '0';
+                    reservedBannerDiv.style.width = '100%';
+                    reservedBannerDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+                    reservedBannerDiv.style.color = '#FFF';
+                    reservedBannerDiv.style.textAlign = 'center';
+                    reservedBannerDiv.textContent = 'RESERVED';
+                    button.appendChild(reservedBannerDiv);
+                }
+
+                if (isDragMode) {
+                    enableDrag(button);
+                }
+
+                container.appendChild(button);
+            });
+        }
+
+        function arrangeButtons() {
+            const container = document.querySelector('.tables-container');
+            const buttons = Array.from(container.querySelectorAll('a'));
+            const containerWidth = container.clientWidth;
+            const containerHeight = container.clientHeight;
+            const buttonSize = Math.min(containerWidth, containerHeight) / 4.5;
+            const margin = buttonSize / 8;
+
+            buttons.sort((a, b) => {
+                const aNumber = parseInt(a.id.split('-')[1], 10);
+                const bNumber = parseInt(b.id.split('-')[1], 10);
+                return aNumber - bNumber;
+            });
+
+            buttons.forEach((button, index) => {
+                const x = (index % 5) * (buttonSize + margin);
+                const y = Math.floor(index / 5) * (buttonSize + margin);
+                button.style.left = `${x}px`;
+                button.style.top = `${y}px`;
+                saveButtonPosition(button.id, x, y);
+            });
+        }
+
+        function resizeContainer() {
+            const container = document.querySelector('.tables-container');
+            const width = container.clientWidth;
+            const height = width / 2;
+            container.style.height = `${height}px`;
+        }
+
+        setInterval(() => {
+            const tenant = getTenantFromHostname();
+            loadTables(tenant);
+        }, 10000);
+    };
+
+    function getTenantFromHostname() {
+        const hostname = window.location.hostname;
+        console.log(`Hostname: ${hostname}`);
+        const tenant = hostname.split('.')[0];
+        return tenant;
+    }
+
+    function updateHeader(waiterName, tenant) {
+        const header = document.querySelector('.header h2');
+        header.textContent = `Tables Overview for ${tenant}`;
+    }
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Tahoma', sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            position: relative;
+            max-width: 98%;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: rgb(208, 212, 217);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        .header {
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            text-align: center;
+            font-size: medium;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .header-buttons {
+            display: flex;
+            justify-content: flex-end;
+            margin: 20px 0;
+            align-items: center;
+        }
+
+        .header-buttons button {
+            margin: 0 10px;
+            padding: 10px 20px;
+            font-size: 1em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .header-buttons button:hover {
+            background-color: #00458f;
+            color: white;
+        }
+
+        .header-buttons .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .header-buttons .btn-primary.active {
+            background-color: #0056b3;
+            color: white;
+        }
+
+        .legend {
+            display: flex;
+            margin: 0 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 0 10px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+        }
+
+        h2 {
+            margin: 10;
+            font-size: 1em;
+            color: aliceblue;
+        }
+
+        .tables-container {
+            position: relative;
+            width: 100%;
+            height: 75vh;
+            overflow: hidden;
+        }
+
+        .custom-button {
+            background-color: #4CAF50;
+            border-radius: 4px;
+        }
+
+        .custom-button:hover {
+            background-color: #388E3C;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+        }
+
+        .occupied-button {
+            background-color: #FF5722;
+            border-radius: 4px;
+        }
+
+        .occupied-button:hover {
+            background-color: #711c02;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            color: white;
+            border-radius: 4px;
+        }
+
+        .table-number {
+            font-size: bold 1em ;
+            margin-bottom: 5px;
+        }
+
+        .table-duration {
+            font-size: 0.85em;
+            color: yellow;
+            margin-bottom: 12%;
+
+        }
+
+        .time-diff {
+            font-size: 0.85em;
+            margin-bottom: 12%;
+            align-content: center;
+        }
+
+        .status-banner {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* ημιδιαφανές με 50% διαφάνεια */
+            color: #FFF;
+            text-align: center;
+            font-size: 0.85em;
+            padding: 2px 0;
+        }
+
+        .reserved-banner {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.7); /* πιο σκούρο φόντο */
+            color: #FFF;
+            text-align: center;
+            font-size: 0.85em;
+            padding: 2px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Overview</h2>
+        </div>
+        <div class="header-buttons">
+            <button id="toggle-drag-mode" class="btn-primary">Change Tables Position</button>
+            <button id="arrange-buttons" class="btn-primary">Arrange Tables</button>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #FFFFFF; border: 1px solid #000;"></div>
+                    Free table
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #FF5722;"></div>
+                    Occupied
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #4CAF50;"></div>
+                    Served
+                </div>
+            </div>
+        </div>
+        <div class="tables-container"></div>
+    </div>
+</body>
+</html>
