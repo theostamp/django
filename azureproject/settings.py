@@ -26,7 +26,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],  # Βεβαιωθείτε ότι αυτή η γραμμή δείχνει στον σωστό φάκελο
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -65,10 +65,8 @@ ALLOWED_HOSTS = ['localhost', '*', '[::1]', 'dign-fkh0cyakasa6cqf4.eastus-01.azu
 
 SHARED_APPS = [
     'django_tenants',
-    # 'tenants.apps.TenantsConfig',
     'paypal.standard.ipn',
     'authentication.apps.AuthenticationConfig',
-    'tables.apps.TablesConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -81,7 +79,6 @@ SHARED_APPS = [
 TENANT_APPS = [
     'tables.apps.TablesConfig',
     'authentication.apps.AuthenticationConfig',
-    # 'tenants.apps.TenantsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

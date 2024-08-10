@@ -1,3 +1,5 @@
+# tables/urls.py
+
 from django.urls import path
 from . import views
 
@@ -7,7 +9,7 @@ urlpatterns = [
     path('list_order_files/<str:tenant>/', views.list_order_files, name='list_order_files'),
     path('get_order/<str:tenant>/<str:filename>/', views.get_order, name='get_order_tenant'),
     path('table_selection/', views.table_selection, name='table_selection'),
-    path('tables/table_selection/', views.table_selection, name='table_selection'),  # Επαναφορά της διαδρομής
+    # path('tables/table_selection/', views.table_selection, name='table_selection'),  # Επαναφορά της διαδρομής
     path('order_for_table/<int:table_number>/', views.order_for_table, name='order_for_table'),
     path('submit_order/', views.submit_order, name='submit_order'),
     path('order_for_table/<int:table_number>/submit_order/', views.submit_order, name='submit_order_specific'),
