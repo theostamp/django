@@ -30,4 +30,6 @@ urlpatterns = [
     path('paypal-ipn/', include('paypal.standard.ipn.urls')),
     path('create-subscription/', views.create_subscription, name='create_subscription'),
     path('change-subscription/', views.change_subscription, name='change_subscription'),
+    path('api/register-device/', views.register_device, name='register_device'),
+    path('api/authenticate-device/', views.authenticate_device, name='authenticate_device'),
 ]

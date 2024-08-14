@@ -669,3 +669,41 @@ def change_subscription(request):
         form = SubscriptionPlanForm()
 
     return render(request, 'authentication/change_subscription.html', {'form': form})
+
+
+@csrf_exempt
+def authenticate_device(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            mac_address = data.get('mac_address')
+            tenant = Tenant.objects.get(schema_name=request.tenant.schema_name)
+            if mac_address and License.objects.filter(mac_address=mac_address, tenant=tenant).exists():
+                return JsonResponse({"status": "success"})
+            else:
+                return JsonResponse({"status": "error", "message": "Unauthorized"}, status=401)
+        except json.JSONDecodeError:
+            return JsonResponse({"status": "error", "message": "Invalid JSON"}, status=400)
+    return JsonResponse({"status": "error", "message": "Invalid request method"}, status=405)
+
+
+@csrf_exempt
+def register_device(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            mac_address = data.get('mac_address')
+            # Ανάκτηση του tenant από το request (π.χ. μέσω του domain ή του user)
+            user = request.user
+            tenant = user.tenant  # Αν υποθέσουμε ότι κάθε χρήστης συνδέεται με έναν tenant
+            
+            # Αποθήκευση της MAC διεύθυνσης στη βάση δεδομένων (δημιουργήστε ένα μοντέλο για τη συσκευή)
+            device, created = License.objects.get_or_create(user=user, defaults={'mac_address': mac_address})
+            if not created:
+                device.mac_address = mac_address
+                device.save()
+            
+            return JsonResponse({"status": "success", "message": "Device registered successfully."})
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)})
+    return JsonResponse({"status": "error", "message": "Invalid request method."})
