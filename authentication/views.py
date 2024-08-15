@@ -88,38 +88,30 @@ def get_mac_address(request, username):
 
 
 
-@login_required
 @csrf_exempt
+@login_required
 def check_mac_address(request):
-    """
-    Ελέγχει την MAC address του υπολογιστή και την συγκρίνει με την καταχωρημένη στο σύστημα.
-    """
     try:
+        data = json.loads(request.body)
+        mac_address = data.get('mac_address')
         tenant = Tenant.objects.get(schema_name=request.user.username)
         license = License.objects.get(tenant=tenant)
-        data = json.loads(request.body)
-        current_mac = data.get('mac_address')
 
-        if not current_mac:
-            return JsonResponse({'status': 'error', 'message': 'No MAC address provided'}, status=400)
-
-        if license.mac_address == current_mac:
-            return JsonResponse({'status': 'registered'})
-        elif license.mac_address == '':
-            license.mac_address = current_mac
-            license.save()
-            return JsonResponse({'status': 'registered_new'})
+        if license.mac_address == mac_address:
+            return JsonResponse({"status": "success", "message": "MAC address verified"})
         else:
-            return JsonResponse({'status': 'mismatch'})
-
+            return JsonResponse({"status": "error", "message": "Unauthorized MAC address"}, status=401)
     except Tenant.DoesNotExist:
-        return JsonResponse({'status': 'error', 'message': 'Tenant not found'}, status=404)
+        return JsonResponse({"status": "error", "message": "Tenant not found"}, status=404)
     except License.DoesNotExist:
-        return JsonResponse({'status': 'error', 'message': 'License not found'}, status=404)
+        return JsonResponse({"status": "error", "message": "License not found"}, status=404)
     except json.JSONDecodeError:
-        return JsonResponse({'status': 'error', 'message': 'Invalid JSON data'}, status=400)
+        return JsonResponse({"status": "error", "message": "Invalid JSON data"}, status=400)
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+    
 
-
+    
 @login_required
 @csrf_exempt
 def register_mac_address(request, username):

@@ -10,7 +10,9 @@ urlpatterns = [
     path('api/get-mac-address/<str:username>/', get_mac_address, name='get_mac_address'),
     path('api/register-mac-address/<str:username>/', register_mac_address, name='register_mac_address'),
     path('api/check-login/', check_login, name='check_login'),
-
+    path('api/check-mac-address/', check_mac_address, name='check_mac_address'),
+    
+    
 
 
     path('', index, name='index'),

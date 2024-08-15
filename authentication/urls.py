@@ -1,6 +1,7 @@
 # authentication/urls.py
 from django.urls import path, include
 from . import views
+from .views import check_mac_address, register_mac_address, get_mac_address
 
 urlpatterns = [
     path('register/', views.register, name='register'),
@@ -33,5 +34,8 @@ urlpatterns = [
     path('api/register-device/', views.register_device, name='register_device'),
     path('api/authenticate-device/', views.authenticate_device, name='authenticate_device'),
     path('register-mac-address/<str:username>/', views.register_mac_address, name='register_mac_address'),
+    path('api/check-mac-address/', check_mac_address, name='check_mac_address'),
+    path('api/register-mac-address/<str:username>/', register_mac_address, name='register_mac_address'),
+    path('api/get-mac-address/<str:username>/', get_mac_address, name='get_mac_address'),
 
 ]
