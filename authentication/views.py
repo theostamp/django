@@ -85,9 +85,47 @@ def get_mac_address(request, username):
     except (Tenant.DoesNotExist, License.DoesNotExist):
         return JsonResponse({'mac_address': ''})  # Επιστρέφουμε κενό εάν δεν βρέθηκε MAC διεύθυνση
 
-@csrf_exempt
+
+
+
 @login_required
+@csrf_exempt
+def check_mac_address(request):
+    """
+    Ελέγχει την MAC address του υπολογιστή και την συγκρίνει με την καταχωρημένη στο σύστημα.
+    """
+    try:
+        tenant = Tenant.objects.get(schema_name=request.user.username)
+        license = License.objects.get(tenant=tenant)
+        data = json.loads(request.body)
+        current_mac = data.get('mac_address')
+
+        if not current_mac:
+            return JsonResponse({'status': 'error', 'message': 'No MAC address provided'}, status=400)
+
+        if license.mac_address == current_mac:
+            return JsonResponse({'status': 'registered'})
+        elif license.mac_address == '':
+            license.mac_address = current_mac
+            license.save()
+            return JsonResponse({'status': 'registered_new'})
+        else:
+            return JsonResponse({'status': 'mismatch'})
+
+    except Tenant.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Tenant not found'}, status=404)
+    except License.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'License not found'}, status=404)
+    except json.JSONDecodeError:
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON data'}, status=400)
+
+
+@login_required
+@csrf_exempt
 def register_mac_address(request, username):
+    """
+    Καταχωρεί τη MAC address ενός νέου υπολογιστή στο σύστημα.
+    """
     try:
         tenant = Tenant.objects.get(schema_name=username)
         license, created = License.objects.get_or_create(tenant=tenant)

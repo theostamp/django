@@ -32,4 +32,6 @@ urlpatterns = [
     path('change-subscription/', views.change_subscription, name='change_subscription'),
     path('api/register-device/', views.register_device, name='register_device'),
     path('api/authenticate-device/', views.authenticate_device, name='authenticate_device'),
+    path('register-mac-address/<str:username>/', views.register_mac_address, name='register_mac_address'),
+
 ]

@@ -2,7 +2,7 @@
 
 from django.contrib import admin
 from django.urls import include, path
-from authentication.views import check_login, index, payment_error,get_mac_address, register_mac_address
+from authentication.views import check_mac_address, register_mac_address, check_login, index, payment_error,get_mac_address, register_mac_address
 from tables.views import check_permissions, table_orders, serve_reservations, serve_occupied_tables, update_time_diff, serve_order_file, get_occupied_tables, list_received_orders, test_read_file, order_details, load_positions, check_for_refresh, save_positions,signal_refresh_order_summary, delete_received_orders, get_orders,cancel_order,delete_order_file, process_orders, update_order,  get_json,get_orders_json, success,submit_order, order_for_table,table_selection,get_order,order_summary, table_selection_with_time_diff, upload_json,products_json,list_order_files
 
 urlpatterns = [
@@ -65,6 +65,8 @@ urlpatterns = [
     path('table_orders/<str:tenant>/<int:table_number>/', table_orders, name='table_orders'),
     path('check_permissions/', check_permissions, name='check_permissions'),
 
+    path('register-mac-address/<str:username>/', register_mac_address, name='register_mac_address'),
+    path('check-mac-address/', check_mac_address, name='check_mac_address'),
 
 
 
