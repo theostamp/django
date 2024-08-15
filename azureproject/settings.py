@@ -192,3 +192,34 @@ PAYPAL_CLIENT_SECRET = config('PAYPAL_CLIENT_SECRET')
 # settings.py
 PAYPAL_RECEIVER_EMAIL = 'theostam1966@gmail.com'
 PAYPAL_TEST = True  # Ορίστε το σε False για την παραγωγή
+
+
+# settings.py στο Django
+
+
+# ΜΟΝΟ ΚΑΤΑ ΤΗ ΦΑΣΗ ΑΝΑΠΤΥΞΗΣ
+# SESSION SETTINGS
+
+# Απενεργοποίηση της ασφάλειας για το cookie του session (Secure flag) ώστε να επιτρέπεται η χρήση σε μη ασφαλείς (HTTP) συνδέσεις
+SESSION_COOKIE_SECURE = False
+
+# Ενεργοποίηση του HTTPOnly flag για προστασία του session από προσβάσεις μέσω JavaScript
+SESSION_COOKIE_HTTPONLY = True
+
+# Απενεργοποίηση του SameSite flag για τα session cookies για να μην αποτρέπεται η αποστολή τους σε διαφορετικό domain
+SESSION_COOKIE_SAMESITE = None  # Ή 'Lax' για περιορισμένη ασφάλεια
+
+# Ορίστε το SESSION_ENGINE για να χρησιμοποιήσετε cookies για session (προεπιλογή)
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+
+# Αν χρησιμοποιείτε τη βάση δεδομένων για τα sessions
+# SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+
+# Ρύθμιση διάρκειας ζωής του session (σε δευτερόλεπτα). Αν είναι 0, το session λήγει μόλις κλείσει το browser.
+SESSION_COOKIE_AGE = 1209600  # 2 εβδομάδες
+
+# Προαιρετικά: Απενεργοποίηση αποστολής του session cookie σε κάθε αίτηση (για βελτίωση απόδοσης)
+SESSION_SAVE_EVERY_REQUEST = False
+
+# Χειρισμός της διάρκειας ζωής του session όταν ο χρήστης κλείσει τον browser
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False

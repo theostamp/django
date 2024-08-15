@@ -32,7 +32,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
-from .models import License
+from getmac import get_mac_address
 
 # Εισαγωγή του logger
 logger = logging.getLogger(__name__)
@@ -56,6 +56,43 @@ def mac_address_required(view_func):
         except (Tenant.DoesNotExist, License.DoesNotExist):
             return HttpResponseForbidden("Access Denied: No License Found.")
     return wrapper
+
+
+
+logger = logging.getLogger(__name__)
+
+@csrf_exempt
+@login_required
+def get_mac_address(request, username):
+    try:
+        tenant = Tenant.objects.get(schema_name=username)
+        license = License.objects.get(tenant=tenant)
+        mac_address = license.mac_address if license.mac_address else ""
+        return JsonResponse({'mac_address': mac_address})
+    except (Tenant.DoesNotExist, License.DoesNotExist):
+        return JsonResponse({'mac_address': ''})  # Επιστρέφουμε κενό εάν δεν βρέθηκε MAC διεύθυνση
+
+@csrf_exempt
+@login_required
+def register_mac_address(request, username):
+    try:
+        tenant = Tenant.objects.get(schema_name=username)
+        license, created = License.objects.get_or_create(tenant=tenant)
+        data = json.loads(request.body)
+        mac_address = data.get('mac_address')
+
+        if mac_address:
+            license.mac_address = mac_address
+            license.save()
+            return JsonResponse({'status': 'success'})
+        else:
+            return JsonResponse({'status': 'error', 'message': 'No MAC address provided'}, status=400)
+    except Tenant.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Tenant not found'}, status=404)
+    except json.JSONDecodeError:
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON data'}, status=400)
+
+
 
 
 paypalrestsdk.configure({
