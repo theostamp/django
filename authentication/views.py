@@ -1,3 +1,6 @@
+
+# authentication/views.py
+
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
 from django.contrib import messages
@@ -42,6 +45,16 @@ try:
     from getmac import get_mac_address
 except ImportError:
     logger.error("Το πακέτο getmac δεν είναι εγκατεστημένο. Εγκαταστήστε το με `pip install getmac`.")
+
+
+@login_required
+def check_login(request):
+    """
+    Ελέγχει αν ο χρήστης είναι συνδεδεμένος και επιστρέφει το κατάλληλο μήνυμα.
+    """
+    return JsonResponse({'status': 'success', 'message': 'User is logged in.'})
+
+
 
 def mac_address_required(view_func):
     def wrapper(request, *args, **kwargs):

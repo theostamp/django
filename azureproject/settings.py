@@ -162,7 +162,7 @@ LOGGING = {
 
 TENANTS_BASE_FOLDER = os.path.join(BASE_DIR, 'tenants_folders')
 
-CSRF_TRUSTED_ORIGINS = ['http://localhost:8003']
+CSRF_TRUSTED_ORIGINS = ['http://localhost:8003','http://127.0.0.1:8003']
 
 from decouple import config
 
