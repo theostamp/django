@@ -531,8 +531,6 @@ def activate_license(request):
         logger.error(f"Unexpected error during license activation: {e}")
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
-
-
 @csrf_exempt
 def check_license(request):
     license_key = request.POST.get('license_key')

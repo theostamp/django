@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import gettext_lazy as _
 from .models import CustomUser
 from django.contrib import admin
-from .models import Subscription
+from .models import Subscription,License
 
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):
@@ -52,3 +52,12 @@ class DomainAdmin(admin.ModelAdmin):
     search_fields = ('domain', 'tenant__name')  # Η διπλή υπογράμμιση χρησιμοποιείται για την πρόσβαση σε σχετικά πεδία
     list_filter = ('tenant__name',)
     ordering = ('domain',)
+
+
+
+@admin.register(License)
+class LicenseAdmin(admin.ModelAdmin):
+    list_display = ('tenant', 'license_key', 'hardware_id', 'computer_name', 'mac_address', 'expiration_date', 'active')
+    search_fields = ('tenant__name', 'license_key', 'hardware_id', 'computer_name', 'mac_address')
+    list_filter = ('active', 'expiration_date')
+    ordering = ('tenant',)
