@@ -824,8 +824,6 @@ def get_orders(request):
     logger.debug(f"Retrieved orders: {order_data}")
     return JsonResponse(order_data, safe=False)
 
-
-@csrf_exempt
 def table_selection_with_time_diff(request):
     tenant = connection.get_tenant()
     tenant_name = tenant.name

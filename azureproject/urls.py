@@ -26,7 +26,7 @@ urlpatterns = [
     path('error/', payment_error, name='error'),  # Προσθήκη του URL pattern για το error
 
     # Χρήση των σωστών εισαγόμενων views
-    
+    path('table_selection_with_time_diff/', table_selection_with_time_diff, name='table_selection_with_time_diff'),
     path('order_summary/', order_summary, name='order_summary'),
 
     path('upload_json/<str:tenant>/', upload_json, name='upload_json'),
