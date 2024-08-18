@@ -2,6 +2,8 @@
 python3 -m pip install -r requirements.txt
 python z_clear_cache.py
 python z_clear.py
+python manage.py clearcache
+
 echo "Running migrations..."
 python manage.py makemigrations authentication
 python manage.py makemigrations  tables

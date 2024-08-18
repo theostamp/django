@@ -522,6 +522,9 @@ def login_view(request):
     return render(request, 'authentication/login.html', {'form': form})
 
 
+
+from datetime import datetime
+
 @login_required
 def profile_view(request):
     current_user = request.user
@@ -533,7 +536,11 @@ def profile_view(request):
     try:
         tenant = Tenant.objects.get(schema_name=current_user.username)
         subscription = Subscription.objects.get(tenant=tenant)
-        days_remaining = (subscription.end_date - datetime.now().date()).days
+        today = timezone.now().date()
+
+        # Μετατροπή του subscription.end_date σε date αντικείμενο αν είναι datetime
+        end_date = subscription.end_date.date() if isinstance(subscription.end_date, datetime) else subscription.end_date
+        days_remaining = (end_date - today).days
         
         # Καθορισμός του status ανάλογα με τις ημέρες που απομένουν
         if days_remaining < 0:
@@ -552,15 +559,11 @@ def profile_view(request):
         'email': current_user.email,
         'tenant': tenant,
         'subscription': subscription,
-        'hardware_id': getattr(current_user, 'hardware_id', None),
-        'computer_name': getattr(current_user, 'computer_name', None),
-        'mac_address': getattr(current_user, 'mac_address', None),
         'days_remaining': days_remaining,
         'subscription_status': subscription_status,
     }
 
-    return render(request, 'profile.html', context)
-
+    return render(request, 'authentication/profile.html', context)
 
 
 
