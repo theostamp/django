@@ -3,31 +3,56 @@
 {% block content %}
 <div class="container mt-5">
     <h2 class="mb-4">Προφίλ Χρήστη</h2>
+    
+    <!-- Ανακοινώσεις -->
     <div class="card mb-4">
-        <div class="card-header">
-            <h4>Στοιχεία Χρήστη</h4>
+        <div class="card-header {% if subscription_status == 'expired' %}bg-danger{% elif subscription_status == 'warning' %}bg-warning{% else %}bg-info{% endif %} text-white">
+            <h4>Ανακοινώσεις</h4>
         </div>
         <div class="card-body">
-            <p><strong>Όνομα χρήστη:</strong> {{ current_user.username }}</p>
-            <p><strong>Email:</strong> {{ email }}</p>
-            <a href="{% url 'password_change' %}" class="btn btn-primary">Αλλαγή Κωδικού Πρόσβασης</a>
+            {% if subscription_status == 'expired' %}
+                <p>Η συνδρομή σας έχει λήξει. Παρακαλώ ανανεώστε την άμεσα!</p>
+            {% elif subscription_status == 'warning' %}
+                <p>Η συνδρομή σας λήγει σε {{ days_remaining }} ημέρες. Μην ξεχάσετε να την ανανεώσετε!</p>
+            {% else %}
+                <p>Η συνδρομή σας είναι ενεργή.</p>
+            {% endif %}
+            <p>Νέο χαρακτηριστικό: Δείτε τις αναλυτικές αναφορές για τις παραγγελίες σας.</p>
         </div>
     </div>
     
-    <div class="card mb-4">
-        <div class="card-header">
-            <h4>Στοιχεία Tenant</h4>
+    <!-- Στοιχεία Χρήστη και Tenant -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Στοιχεία Χρήστη</h4>
+                </div>
+                <div class="card-body">
+                    <p><strong>Όνομα χρήστη:</strong> {{ current_user.username }}</p>
+                    <p><strong>Email:</strong> {{ email }}</p>
+                    <a href="{% url 'password_change' %}" class="btn btn-primary">Αλλαγή Κωδικού Πρόσβασης</a>
+                </div>
+            </div>
         </div>
-        <div class="card-body">
-            {% if tenant %}
-                <p><strong>Όνομα:</strong> {{ tenant.name }}</p>
-                <p><strong>Ημερομηνία δημιουργίας:</strong> {{ tenant.created_on }}</p>
-            {% else %}
-                <p>Δεν βρέθηκαν στοιχεία tenant.</p>
-            {% endif %}
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Στοιχεία Tenant</h4>
+                </div>
+                <div class="card-body">
+                    {% if tenant %}
+                        <p><strong>Όνομα:</strong> {{ tenant.name }}</p>
+                        <p><strong>Ημερομηνία δημιουργίας:</strong> {{ tenant.created_on }}</p>
+                    {% else %}
+                        <p>Δεν βρέθηκαν στοιχεία tenant.</p>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
-
+    
+    <!-- Στοιχεία Συνδρομής -->
     <div class="card mb-4">
         <div class="card-header">
             <h4>Στοιχεία Συνδρομής</h4>
@@ -48,7 +73,7 @@
         </div>
     </div>
 
-    <!-- Νέα κάρτα για εμφάνιση των δεδομένων από τον client -->
+    <!-- Στοιχεία Συσκευής -->
     <div class="card mb-4">
         <div class="card-header">
             <h4>Στοιχεία Συσκευής</h4>

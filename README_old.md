@@ -11,7 +11,7 @@ git reset --hard origin/main
 git init
 
 git add .
-git commit -m "fix mac 43345"
+git commit -m "upgrade profile"
 git branch -M main
 git remote add origin https://github.com/theostamp/django.git
 git push -u origin main 

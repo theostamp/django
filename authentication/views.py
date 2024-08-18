@@ -36,6 +36,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from getmac import get_mac_address
+from datetime import datetime, timedelta
 
 # Εισαγωγή του logger
 logger = logging.getLogger(__name__)
@@ -521,43 +522,45 @@ def login_view(request):
     return render(request, 'authentication/login.html', {'form': form})
 
 
-
 @login_required
 def profile_view(request):
     current_user = request.user
     tenant = None
     subscription = None
-    email = current_user.email  # Χρησιμοποιούμε το email από τον τρέχοντα χρήστη
+    days_remaining = None
+    subscription_status = "active"  # default status
 
     try:
         tenant = Tenant.objects.get(schema_name=current_user.username)
         subscription = Subscription.objects.get(tenant=tenant)
+        days_remaining = (subscription.end_date - datetime.now().date()).days
+        
+        # Καθορισμός του status ανάλογα με τις ημέρες που απομένουν
+        if days_remaining < 0:
+            subscription_status = "expired"
+        elif days_remaining <= 5:
+            subscription_status = "warning"
+        else:
+            subscription_status = "active"
     except Tenant.DoesNotExist:
         tenant = None
     except Subscription.DoesNotExist:
-        subscription = None  # Εάν δεν υπάρχει συνδρομή, ορίζουμε το subscription σε None
-
-    # Βεβαιωθείτε ότι αυτές οι μεταβλητές λαμβάνονται σωστά, π.χ., από το αντίστοιχο model License
-    try:
-        license = License.objects.get(tenant=tenant)
-        hardware_id = license.hardware_id
-        computer_name = license.computer_name
-        mac_address = license.mac_address
-    except License.DoesNotExist:
-        hardware_id = None
-        computer_name = None
-        mac_address = None
+        subscription = None
 
     context = {
-        'hardware_id': hardware_id,
-        'computer_name': computer_name,
-        'mac_address': mac_address,
-        'email': email,
-        'tenant': tenant,  # Παράδειγμα πρόσβασης σε tenant
-        'subscription': subscription,  # Παράδειγμα πρόσβασης σε subscription
+        'current_user': current_user,
+        'email': current_user.email,
+        'tenant': tenant,
+        'subscription': subscription,
+        'hardware_id': getattr(current_user, 'hardware_id', None),
+        'computer_name': getattr(current_user, 'computer_name', None),
+        'mac_address': getattr(current_user, 'mac_address', None),
+        'days_remaining': days_remaining,
+        'subscription_status': subscription_status,
     }
 
-    return render(request, 'authentication/profile.html', context)
+    return render(request, 'profile.html', context)
+
 
 
 
