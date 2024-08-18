@@ -1,6 +1,3 @@
-<!-- templates/authentication/profile.html -->
-
-
 {% extends "base.html" %}
 
 {% block content %}
@@ -8,23 +5,27 @@
     <h2 class="mb-4">Προφίλ Χρήστη</h2>
     
     <!-- Ανακοινώσεις -->
+    {% if show_announcement %}
     <div class="card mb-4">
         <div class="card-header {% if subscription_status == 'expired' %}bg-danger{% elif subscription_status == 'warning' %}bg-warning{% else %}bg-info{% endif %} text-white">
             <h4>Ανακοινώσεις</h4>
         </div>
         <div class="card-body">
-            {% if subscription_status == 'expired' %}
-                <p>Η συνδρομή σας έχει λήξει. Παρακαλώ ανανεώστε την άμεσα!</p>
-            {% elif subscription_status == 'warning' %}
-                <p>Η συνδρομή σας λήγει σε {{ days_remaining }} ημέρες. Μην ξεχάσετε να την ανανεώσετε!</p>
-            {% else %}
-                <p>Η συνδρομή σας είναι ενεργή.</p>
-            {% endif %}
-            <p>Νέο χαρακτηριστικό: Δείτε τις αναλυτικές αναφορές για τις παραγγελίες σας.</p>
+            <p>{{ announcement_message }}</p>
         </div>
     </div>
+    {% else %}
+    <div class="card mb-4">
+        <div class="card-header bg-secondary text-white">
+            <h4>Ανακοινώσεις</h4>
+        </div>
+        <div class="card-body">
+            <p>Καμία νέα ανακοίνωση.</p>
+        </div>
+    </div>
+    {% endif %}
     
-    <!-- Στοιχεία Χρήστη και Tenant -->
+    <!-- Στοιχεία Χρήστη -->
     <div class="row">
         <div class="col-md-6">
             <div class="card mb-4">
@@ -34,22 +35,10 @@
                 <div class="card-body">
                     <p><strong>Όνομα χρήστη:</strong> {{ current_user.username }}</p>
                     <p><strong>Email:</strong> {{ email }}</p>
-                    <a href="{% url 'password_change' %}" class="btn btn-primary">Αλλαγή Κωδικού Πρόσβασης</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h4>Στοιχεία Tenant</h4>
-                </div>
-                <div class="card-body">
                     {% if tenant %}
-                        <p><strong>Όνομα:</strong> {{ tenant.name }}</p>
                         <p><strong>Ημερομηνία δημιουργίας:</strong> {{ tenant.created_on }}</p>
-                    {% else %}
-                        <p>Δεν βρέθηκαν στοιχεία tenant.</p>
                     {% endif %}
+                    <a href="{% url 'password_change' %}" class="btn btn-primary">Αλλαγή Κωδικού Πρόσβασης</a>
                 </div>
             </div>
         </div>
@@ -67,7 +56,6 @@
                 <p><strong>Ημερομηνία Λήξης:</strong> {{ subscription.end_date }}</p>
                 <p><strong>Τιμή:</strong> {{ subscription.price }}</p>
                 <p><strong>Ενεργή:</strong> {{ subscription.active }}</p>
-                <p><strong>Προσωρινό Κλειδί:</strong> {{ subscription.temporary_key }}</p>
                 <a href="{% url 'change_subscription' %}" class="btn btn-warning">Αλλαγή Συνδρομής</a>
             {% else %}
                 <p>Δεν έχετε κάποια ενεργή συνδρομή.</p>
@@ -75,8 +63,5 @@
             {% endif %}
         </div>
     </div>
-
-    <!-- Στοιχεία Συσκευής -->
-    
 </div>
 {% endblock %}

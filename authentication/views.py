@@ -36,8 +36,13 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from getmac import get_mac_address
-from datetime import datetime, timedelta
-
+from datetime import datetime, timedelta, date
+from datetime import date
+from datetime import datetime as dt 
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from .models import Subscription, Tenant
 # Εισαγωγή του logger
 logger = logging.getLogger(__name__)
 
@@ -89,8 +94,24 @@ def get_mac_address(request, username):
 
 
 
-@csrf_exempt
+@api_view(['GET'])
+def check_subscription_status(request, username):
+    try:
+        tenant = Tenant.objects.get(schema_name=username)
+        subscription = Subscription.objects.get(tenant=tenant)
+        if subscription.active:
+            return Response({'subscription_status': 'active'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'subscription_status': 'inactive'}, status=status.HTTP_200_OK)
+    except (Tenant.DoesNotExist, Subscription.DoesNotExist):
+        return Response({'subscription_status': 'no_subscription'}, status=status.HTTP_404_NOT_FOUND)
+
+
+
+
+
 @login_required
+@csrf_exempt
 def check_mac_address(request):
     try:
         data = json.loads(request.body)
@@ -99,7 +120,13 @@ def check_mac_address(request):
         license = License.objects.get(tenant=tenant)
 
         if license.mac_address == mac_address:
-            return JsonResponse({"status": "success", "message": "MAC address verified"})
+            subscription = Subscription.objects.get(tenant=tenant)
+            return JsonResponse({
+                "status": "success", 
+                "message": "MAC address verified", 
+                "subscription_status": subscription.get_status(),
+                "active": subscription.active
+            })
         else:
             return JsonResponse({"status": "error", "message": "Unauthorized MAC address"}, status=401)
     except Tenant.DoesNotExist:
@@ -110,7 +137,6 @@ def check_mac_address(request):
         return JsonResponse({"status": "error", "message": "Invalid JSON data"}, status=400)
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
-    
 
     
 @login_required
@@ -522,9 +548,6 @@ def login_view(request):
     return render(request, 'authentication/login.html', {'form': form})
 
 
-
-from datetime import datetime
-
 @login_required
 def profile_view(request):
     current_user = request.user
@@ -532,27 +555,36 @@ def profile_view(request):
     subscription = None
     days_remaining = None
     subscription_status = "active"  # default status
+    show_announcement = False
+    announcement_message = "Καμία νέα ανακοίνωση."
 
     try:
         tenant = Tenant.objects.get(schema_name=current_user.username)
         subscription = Subscription.objects.get(tenant=tenant)
-        today = timezone.now().date()
+        today = date.today()
 
         # Μετατροπή του subscription.end_date σε date αντικείμενο αν είναι datetime
-        end_date = subscription.end_date.date() if isinstance(subscription.end_date, datetime) else subscription.end_date
+        end_date = subscription.end_date.date() if isinstance(subscription.end_date, dt) else subscription.end_date
         days_remaining = (end_date - today).days
-        
+
         # Καθορισμός του status ανάλογα με τις ημέρες που απομένουν
         if days_remaining < 0:
             subscription_status = "expired"
+            announcement_message = "Η συνδρομή σας έχει λήξει. Παρακαλώ ανανεώστε την άμεσα!"
+            show_announcement = True
         elif days_remaining <= 5:
             subscription_status = "warning"
+            announcement_message = f"Η συνδρομή σας λήγει σε {days_remaining} ημέρες. Μην ξεχάσετε να την ανανεώσετε!"
+            show_announcement = True
         else:
             subscription_status = "active"
+            show_announcement = False
     except Tenant.DoesNotExist:
         tenant = None
     except Subscription.DoesNotExist:
         subscription = None
+        announcement_message = "Δεν έχετε κάποια ενεργή συνδρομή."
+        show_announcement = True
 
     context = {
         'current_user': current_user,
@@ -561,9 +593,12 @@ def profile_view(request):
         'subscription': subscription,
         'days_remaining': days_remaining,
         'subscription_status': subscription_status,
+        'announcement_message': announcement_message,
+        'show_announcement': show_announcement,
     }
 
     return render(request, 'authentication/profile.html', context)
+
 
 
 

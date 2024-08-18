@@ -2,7 +2,6 @@
 python3 -m pip install -r requirements.txt
 python z_clear_cache.py
 python z_clear.py
-python manage.py clearcache
 
 echo "Running migrations..."
 python manage.py makemigrations authentication
@@ -46,6 +45,8 @@ except Exception as e:
     print(f"Error creating domain: {e}")
 END
 
+python manage.py clearcache
 echo "Starting server..."
 cp .env.sample.devcontainer .env
 python manage.py runserver 8003
+python manage.py clearcache

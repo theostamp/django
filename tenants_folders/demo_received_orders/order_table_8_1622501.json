@@ -4,10 +4,10 @@
     "quantity": "1",
     "total_cost": 3.0,
     "waiter": null,
-    "order_done": 1,
+    "order_done": false,
     "printed": false,
-    "order_id": "1636451",
-    "timestamp": "2024-08-17 16:36:45",
-    "time_diff": 0,
-    "time_passed": 0
+    "order_id": "1622501",
+    "timestamp": "2024-08-18 16:22:50",
+    "time_diff": 5,
+    "time_passed": 5
 }
