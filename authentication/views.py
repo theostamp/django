@@ -240,6 +240,8 @@ def paypal_execute(request):
             # Δημιουργία άδειας για τον tenant μετά την επιτυχή πληρωμή
             tenant = Tenant.objects.get(schema_name=request.user.username)
             expiration_date = timezone.now().date() + timedelta(days=365)  # Θέστε την ημερομηνία λήξης για 1 χρόνο
+            tenant.paid_until = expiration_date  # Ενημέρωση του πεδίου paid_until
+            tenant.save()
 
             License.objects.create(
                 tenant=tenant,
@@ -249,8 +251,7 @@ def paypal_execute(request):
                 expiration_date=expiration_date,
                 active=True
             )
-
-        # Αποστολή email στον πωλητή και τον αγοραστή
+           # Αποστολή email στον πωλητή και τον αγοραστή
         try:
             send_mail(
                 'Επιτυχής Πληρωμή',
@@ -265,6 +266,10 @@ def paypal_execute(request):
         return render(request, 'payment/success.html')
     else:
         return render(request, 'payment/error.html', {'error': payment.error})
+
+
+
+
 
 @ensure_csrf_cookie
 def get_csrf_token(request):
@@ -446,7 +451,6 @@ def create_tenant(user, plan):
     tenant = Tenant(
         name=user.username,
         schema_name=user.username,  # Όνομα schema
-        paid_until=datetime.date.today() + datetime.timedelta(days=365),
         on_trial=False,
     )
     tenant.save()
@@ -460,6 +464,7 @@ def create_tenant(user, plan):
 
     # Επιστροφή του tenant για επιβεβαίωση
     return tenant, None
+
 
 
 
@@ -547,7 +552,6 @@ def login_view(request):
 
     return render(request, 'authentication/login.html', {'form': form})
 
-
 @login_required
 def profile_view(request):
     current_user = request.user
@@ -560,29 +564,33 @@ def profile_view(request):
 
     try:
         tenant = Tenant.objects.get(schema_name=current_user.username)
-        subscription = Subscription.objects.get(tenant=tenant)
         today = date.today()
 
-        # Μετατροπή του subscription.end_date σε date αντικείμενο αν είναι datetime
-        end_date = subscription.end_date.date() if isinstance(subscription.end_date, dt) else subscription.end_date
-        days_remaining = (end_date - today).days
-
-        # Καθορισμός του status ανάλογα με τις ημέρες που απομένουν
-        if days_remaining < 0:
+        # Έλεγχος για το αν υπάρχει η ημερομηνία λήξης πληρωμής και αν αυτή έχει παρέλθει
+        if tenant.paid_until and tenant.paid_until >= today:
+            days_remaining = (tenant.paid_until - today).days
+            subscription_status = "active"
+            
+            if days_remaining <= 5:
+                subscription_status = "warning"
+                announcement_message = f"Η συνδρομή σας λήγει σε {days_remaining} ημέρες. Μην ξεχάσετε να την ανανεώσετε!"
+                show_announcement = True
+        else:
             subscription_status = "expired"
             announcement_message = "Η συνδρομή σας έχει λήξει. Παρακαλώ ανανεώστε την άμεσα!"
             show_announcement = True
-        elif days_remaining <= 5:
-            subscription_status = "warning"
-            announcement_message = f"Η συνδρομή σας λήγει σε {days_remaining} ημέρες. Μην ξεχάσετε να την ανανεώσετε!"
-            show_announcement = True
-        else:
-            subscription_status = "active"
-            show_announcement = False
+
+        # Ανάκτηση της συνδρομής (αν υπάρχει)
+        subscription = Subscription.objects.filter(tenant=tenant).first()
+        
     except Tenant.DoesNotExist:
         tenant = None
+        subscription_status = "no_tenant"
+        announcement_message = "Δεν βρέθηκε tenant."
+        show_announcement = True
     except Subscription.DoesNotExist:
         subscription = None
+        subscription_status = "no_subscription"
         announcement_message = "Δεν έχετε κάποια ενεργή συνδρομή."
         show_announcement = True
 
