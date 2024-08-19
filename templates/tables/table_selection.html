@@ -11,6 +11,10 @@
                 localStorage.setItem('waiterName', waiterName);
                 updateHeader(waiterName);
             }
+            // Set interval to refresh the page every 10 seconds
+            setInterval(function() {
+                location.reload();
+            }, 10000); // 10000ms = 10 seconds
         };
 
         function updateHeader(waiterName) {
