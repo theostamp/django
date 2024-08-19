@@ -11,7 +11,7 @@ git reset --hard origin/main
 git init
 
 git add .
-git commit -m "upgrade 1.00 5"
+git commit -m "upgrade 1.00 6"
 git branch -M main
 git remote add origin https://github.com/theostamp/django.git
 git push -u origin main 
