@@ -186,6 +186,9 @@ def create_user(username, email, password):
 @login_required
 def paypal_payment(request):
     if request.method == "POST":
+        tenant = Tenant.objects.get(schema_name=request.user.username)
+        subscription = Subscription.objects.get(tenant=tenant)
+
         payment = paypalrestsdk.Payment({
             "intent": "sale",
             "payer": {
@@ -196,15 +199,15 @@ def paypal_payment(request):
             "transactions": [{
                 "item_list": {
                     "items": [{
-                        "name": "subscription",
+                        "name": subscription.subscription_type,
                         "sku": "001",
-                        "price": "10.00",
+                        "price": str(subscription.price),
                         "currency": "USD",
                         "quantity": 1}]},
                 "amount": {
-                    "total": "10.00",
+                    "total": str(subscription.price),
                     "currency": "USD"},
-                "description": "Subscription payment."}]})
+                "description": f"{subscription.subscription_type} subscription payment."}]})
 
         if payment.create():
             for link in payment.links:
@@ -727,6 +730,8 @@ def stripe_webhook(request):
 
     return HttpResponse(status=200)
 
+
+
 @login_required
 def create_subscription(request):
     if request.method == 'POST':
@@ -775,6 +780,11 @@ def create_subscription(request):
         form = SubscriptionPlanForm()
 
     return render(request, 'authentication/create_subscription.html', {'form': form})
+
+
+
+
+
 
 @login_required
 def change_subscription(request):
