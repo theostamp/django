@@ -193,7 +193,9 @@ PAYPAL_CLIENT_SECRET = config('PAYPAL_CLIENT_SECRET')
 # settings.py
 PAYPAL_RECEIVER_EMAIL = 'theostam1966@gmail.com'
 PAYPAL_TEST = True  # Ορίστε το σε False για την παραγωγή
-
+# PAYPAL_ACCESS_TOKEN = 'access_token6V7rbVwmlM1gFZKW_8QtzWXqpcwQ6T5vhEGYNJDAAdn3paCgRpdeMdVYmWzgbKSsECednupJ3Zx5Xd-g'
+PAYPAL_ACCESS_TOKEN = None
+PAYPAL_API_BASE_URL = 'https://api-m.sandbox.paypal.com'
 
 # settings.py στο Django
 

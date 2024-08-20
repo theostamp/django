@@ -45,6 +45,8 @@ from rest_framework import status
 from .models import Subscription, Tenant
 # Εισαγωγή του logger
 logger = logging.getLogger(__name__)
+import requests
+from django.conf import settings
 
 # Ανάκτηση της MAC address - Αυτό μπορεί να απαιτήσει εγκατάσταση του πακέτου getmac.
 try:
@@ -580,7 +582,7 @@ def profile_view(request):
                 show_announcement = True
         else:
             subscription_status = "expired"
-            announcement_message = "Η συνδρομή σας έχει λήξει. Παρακαλώ ανανεώστε την άμεσα!"
+            announcement_message = "Δεν έχετε ενεργή συνδρομή. "
             show_announcement = True
 
         # Ανάκτηση της συνδρομής (αν υπάρχει)
@@ -844,3 +846,104 @@ def register_device(request):
         except Exception as e:
             return JsonResponse({"status": "error", "message": str(e)})
     return JsonResponse({"status": "error", "message": "Invalid request method."})
+
+
+
+def get_paypal_access_token():
+    if settings.PAYPAL_ACCESS_TOKEN:
+        return settings.PAYPAL_ACCESS_TOKEN
+    
+    auth_response = requests.post(
+        f'{settings.PAYPAL_API_BASE_URL}/v1/oauth2/token',
+        headers={
+            'Accept': 'application/json',
+            'Accept-Language': 'en_US',
+        },
+        auth=(settings.PAYPAL_CLIENT_ID, settings.PAYPAL_CLIENT_SECRET),
+        data={'grant_type': 'client_credentials'},
+    )
+
+    if auth_response.status_code == 200:
+        settings.PAYPAL_ACCESS_TOKEN = auth_response.json().get('access_token')
+        return settings.PAYPAL_ACCESS_TOKEN
+    else:
+        raise Exception("Failed to obtain PayPal access token")
+
+
+
+def create_paypal_plan(request):
+    access_token = get_paypal_access_token()
+
+    headers = {
+        'Authorization': f'Bearer {access_token}',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'PayPal-Request-Id': 'PLAN-18062019-001',
+        'Prefer': 'return=representation',
+    }
+
+    data = {
+        "product_id": "PROD-XXCD1234QWER65782",
+        "name": "Video Streaming Service Plan",
+        "description": "Video Streaming Service basic plan",
+        "status": "ACTIVE",
+        "billing_cycles": [
+            {
+                "frequency": {
+                    "interval_unit": "MONTH",
+                    "interval_count": 1
+                },
+                "tenure_type": "TRIAL",
+                "sequence": 1,
+                "total_cycles": 1,
+                "pricing_scheme": {
+                    "fixed_price": {
+                        "value": "0",
+                        "currency_code": "EUR"
+                    }
+                }
+            },
+            {
+                "frequency": {
+                    "interval_unit": "MONTH",
+                    "interval_count": 1
+                },
+                "tenure_type": "REGULAR",
+                "sequence": 2,
+                "total_cycles": 12,
+                "pricing_scheme": {
+                    "fixed_price": {
+                        "value": "20",
+                        "currency_code": "EUR"
+                    }
+                }
+            }
+        ],
+        "payment_preferences": {
+            "auto_bill_outstanding": True,
+            "setup_fee": {
+                "value": "0",
+                "currency_code": "EUR"
+            },
+            "setup_fee_failure_action": "CONTINUE",
+            "payment_failure_threshold": 3
+        },
+        "taxes": {
+            "percentage": "0",
+            "inclusive": False
+        }
+    }
+
+    response = requests.post(
+        f'{settings.PAYPAL_API_BASE_URL}/v1/billing/plans',
+        headers=headers,
+        data=json.dumps(data)
+    )
+
+    if response.status_code == 201:
+        plan = response.json()
+        # Αποθήκευση του plan ID ή άλλη ενέργεια
+        return render(request, 'payment/success.html', {'plan': plan})
+    else:
+        error = response.json()
+        return render(request, 'payment/error.html', {'error': error})

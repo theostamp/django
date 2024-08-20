@@ -1,17 +1,77 @@
-<!-- authentication/templates/authentication/create_subscription.html -->
 {% extends "base.html" %}
 
 {% block content %}
 <div class="container mt-5">
-    <h2 class="mb-4">Δημιουργία Συνδρομής</h2>
-    <div class="card mb-4">
-        <div class="card-body">
-            <form method="post" action="{% url 'create_subscription' %}">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit" class="btn btn-primary">Δημιουργία Συνδρομής</button>
-            </form>
+    <h2 class="mb-4 text-center">Επιλέξτε το Πλάνο Συνδρομής σας</h2>
+    <div class="row justify-content-center">
+
+        <!-- Κάρτα για τη Δοκιμαστική Συνδρομή -->
+        <div class="col-md-4">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header text-white bg-primary text-center">
+                    <h4>Δοκιμαστική Συνδρομή</h4>
+                </div>
+                <div class="card-body text-center">
+                    <h2 class="card-title pricing-card-title">Δωρεάν <small class="text-muted">/ για 1 μήνα</small></h2>
+                    <ul class="list-unstyled mt-3 mb-4">
+                        <li>Δοκιμή χωρίς χρέωση</li>
+                        <li>Αυτόματη χρέωση μετά τον μήνα</li>
+                        <li>Πλήρης πρόσβαση στις υπηρεσίες</li>
+                    </ul>
+                    <form method="post" action="{% url 'create_subscription' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="plan" value="trial">
+                        <button type="submit" class="btn btn-lg btn-block btn-outline-primary">Επιλογή</button>
+                    </form>
+                </div>
+            </div>
         </div>
+
+        <!-- Κάρτα για τη Μηνιαία Συνδρομή -->
+        <div class="col-md-4">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header text-white bg-success text-center">
+                    <h4>Μηνιαία Συνδρομή</h4>
+                </div>
+                <div class="card-body text-center">
+                    <h2 class="card-title pricing-card-title">20€ <small class="text-muted">/ μήνα</small></h2>
+                    <ul class="list-unstyled mt-3 mb-4">
+                        <li>Χρέωση 20€ ανά μήνα</li>
+                        <li>Ακύρωση ανά πάσα στιγμή</li>
+                        <li>Πλήρης πρόσβαση στις υπηρεσίες</li>
+                    </ul>
+                    <form method="post" action="{% url 'create_subscription' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="plan" value="basic">
+                        <button type="submit" class="btn btn-lg btn-block btn-outline-success">Επιλογή</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Κάρτα για την Ετήσια Συνδρομή -->
+        <div class="col-md-4">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header text-white bg-warning text-center">
+                    <h4>Ετήσια Συνδρομή</h4>
+                </div>
+                <div class="card-body text-center">
+                    <h2 class="card-title pricing-card-title">200€ <small class="text-muted">/ έτος</small></h2>
+                    <ul class="list-unstyled mt-3 mb-4">
+                        <li>Χρέωση 200€ ανά έτος</li>
+                        <li>Ακύρωση ανά πάσα στιγμή</li>
+                        <li>Πλήρης πρόσβαση στις υπηρεσίες</li>
+                        <li>Εξοικονόμηση 40€ σε σχέση με τη μηνιαία χρέωση</li>
+                    </ul>
+                    <form method="post" action="{% url 'create_subscription' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="plan" value="premium">
+                        <button type="submit" class="btn btn-lg btn-block btn-outline-warning">Επιλογή</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 {% endblock %}
