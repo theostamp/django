@@ -184,7 +184,6 @@ def create_user(username, email, password):
     return user, None
 
 
-
 @login_required
 def paypal_payment(request):
     if request.method == "POST":
@@ -204,11 +203,11 @@ def paypal_payment(request):
                         "name": subscription.subscription_type,
                         "sku": "001",
                         "price": str(subscription.price),
-                        "currency": "USD",
+                        "currency": "EUR",
                         "quantity": 1}]},
                 "amount": {
                     "total": str(subscription.price),
-                    "currency": "USD"},
+                    "currency": "EUR"},
                 "description": f"{subscription.subscription_type} subscription payment."}]})
 
         if payment.create():
@@ -733,7 +732,6 @@ def stripe_webhook(request):
     return HttpResponse(status=200)
 
 
-
 @login_required
 def create_subscription(request):
     if request.method == 'POST':
@@ -742,19 +740,16 @@ def create_subscription(request):
             plan = form.cleaned_data['plan']
             tenant = Tenant.objects.get(schema_name=request.user.username)
 
-            start_date = timezone.now()
             if plan == 'trial':
+                return redirect('create_paypal_plan')  # Ανακατεύθυνση στο view που δημιουργεί το PayPal plan
+
+            start_date = timezone.now()
+            if plan == 'basic':
                 end_date = start_date + timedelta(days=30)
-                price = 0.00
-            elif plan == 'basic':
-                end_date = start_date + timedelta(days=365)
-                price = 100.00
+                price = 20.00
             elif plan == 'premium':
                 end_date = start_date + timedelta(days=365)
                 price = 200.00
-            elif plan == 'enterprise':
-                end_date = start_date + timedelta(days=365)
-                price = 500.00
 
             subscription, created = Subscription.objects.get_or_create(
                 tenant=tenant,
@@ -782,7 +777,6 @@ def create_subscription(request):
         form = SubscriptionPlanForm()
 
     return render(request, 'authentication/create_subscription.html', {'form': form})
-
 
 
 
@@ -848,7 +842,6 @@ def register_device(request):
     return JsonResponse({"status": "error", "message": "Invalid request method."})
 
 
-
 def get_paypal_access_token():
     if settings.PAYPAL_ACCESS_TOKEN:
         return settings.PAYPAL_ACCESS_TOKEN
@@ -871,6 +864,7 @@ def get_paypal_access_token():
 
 
 
+@login_required
 def create_paypal_plan(request):
     access_token = get_paypal_access_token()
 
@@ -884,8 +878,8 @@ def create_paypal_plan(request):
 
     data = {
         "product_id": "PROD-XXCD1234QWER65782",
-        "name": "Video Streaming Service Plan",
-        "description": "Video Streaming Service basic plan",
+        "name": "Trial Subscription Plan",
+        "description": "1 month trial followed by regular monthly billing.",
         "status": "ACTIVE",
         "billing_cycles": [
             {
@@ -942,8 +936,19 @@ def create_paypal_plan(request):
 
     if response.status_code == 201:
         plan = response.json()
-        # Αποθήκευση του plan ID ή άλλη ενέργεια
-        return render(request, 'payment/success.html', {'plan': plan})
+        # Αποθήκευση του plan ID ή άλλη ενέργεια, όπως ενημέρωση της συνδρομής του χρήστη.
+        # Εδώ θα μπορούσατε να αποθηκεύσετε το plan ID στον χρήστη ή στη συνδρομή.
+
+        # Για παράδειγμα:
+        tenant = Tenant.objects.get(schema_name=request.user.username)
+        subscription = Subscription.objects.get(tenant=tenant)
+        subscription.plan_id = plan['id']  # Αποθήκευση του plan ID
+        subscription.save()
+
+        # Ανακατεύθυνση στη σελίδα πληρωμής ή success page
+        messages.success(request, 'Το συνδρομητικό πλάνο PayPal δημιουργήθηκε με επιτυχία.')
+        return redirect('paypal_payment')
     else:
         error = response.json()
+        messages.error(request, 'Αποτυχία δημιουργίας συνδρομητικού πλάνου PayPal.')
         return render(request, 'payment/error.html', {'error': error})
