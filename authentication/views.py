@@ -740,8 +740,10 @@ def create_subscription(request):
             plan = form.cleaned_data['plan']
             tenant = Tenant.objects.get(schema_name=request.user.username)
 
+            # Αν η επιλογή είναι για τη δοκιμαστική συνδρομή
             if plan == 'trial':
-                return redirect('create_paypal_plan')  # Ανακατεύθυνση στο view που δημιουργεί το PayPal plan
+                # Δημιουργία του PayPal plan και επιστροφή στη σελίδα πληρωμής
+                return redirect('create_paypal_plan')
 
             start_date = timezone.now()
             if plan == 'basic':
@@ -777,9 +779,6 @@ def create_subscription(request):
         form = SubscriptionPlanForm()
 
     return render(request, 'authentication/create_subscription.html', {'form': form})
-
-
-
 
 
 @login_required
@@ -936,16 +935,14 @@ def create_paypal_plan(request):
 
     if response.status_code == 201:
         plan = response.json()
-        # Αποθήκευση του plan ID ή άλλη ενέργεια, όπως ενημέρωση της συνδρομής του χρήστη.
-        # Εδώ θα μπορούσατε να αποθηκεύσετε το plan ID στον χρήστη ή στη συνδρομή.
 
-        # Για παράδειγμα:
+        # Αποθήκευση του plan ID
         tenant = Tenant.objects.get(schema_name=request.user.username)
         subscription = Subscription.objects.get(tenant=tenant)
-        subscription.plan_id = plan['id']  # Αποθήκευση του plan ID
+        subscription.plan_id = plan['id']
         subscription.save()
 
-        # Ανακατεύθυνση στη σελίδα πληρωμής ή success page
+        # Ανακατεύθυνση στη σελίδα πληρωμής
         messages.success(request, 'Το συνδρομητικό πλάνο PayPal δημιουργήθηκε με επιτυχία.')
         return redirect('paypal_payment')
     else:

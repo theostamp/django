@@ -26,6 +26,27 @@
                         <button type="submit" class="btn btn-lg btn-block btn-outline-primary">Επιλογή</button>
                     </form>
                 </div>
+                <div id="paypal-button-container-P-5JM215843B7329827M3CQ5BA"></div>
+                <script src="https://www.paypal.com/sdk/js?client-id=ASrae61Vx8cbBcxH0jMYJqLY05MiA72596kHm8V0nd2ozl8DA9Wsfgce8YPoVJR_U0yfzwWebfPKvssZ&vault=true&intent=subscription" data-sdk-integration-source="button-factory"></script>
+                <script>
+                  paypal.Buttons({
+                      style: {
+                          shape: 'rect',
+                          color: 'blue',
+                          layout: 'vertical',
+                          label: 'subscribe'
+                      },
+                      createSubscription: function(data, actions) {
+                        return actions.subscription.create({
+                          /* Creates the subscription */
+                          plan_id: 'P-5JM215843B7329827M3CQ5BA'
+                        });
+                      },
+                      onApprove: function(data, actions) {
+                        alert(data.subscriptionID); // You can add optional success message for the subscriber here
+                      }
+                  }).render('#paypal-button-container-P-5JM215843B7329827M3CQ5BA'); // Renders the PayPal button
+                </script>
             </div>
         </div>
 
