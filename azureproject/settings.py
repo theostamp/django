@@ -227,7 +227,7 @@ SESSION_SAVE_EVERY_REQUEST = False
 # Χειρισμός της διάρκειας ζωής του session όταν ο χρήστης κλείσει τον browser
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
-CSP_DEFAULT_SRC = ("'self'",)
-CSP_STYLE_SRC = ("'self'", "https://www.paypal.com", "'unsafe-inline'")
-CSP_SCRIPT_SRC = ("'self'", "https://www.paypal.com", "https://www.paypalobjects.com")
+# CSP_DEFAULT_SRC = ("'self'",)
+# # CSP_STYLE_SRC = ("'self'", "https://www.paypal.com", "'unsafe-inline'")
+# CSP_SCRIPT_SRC = ("'self'", "https://www.paypal.com", "https://www.paypalobjects.com")
 
