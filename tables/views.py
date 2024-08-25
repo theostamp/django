@@ -116,7 +116,11 @@ def upload_json(request, tenant):
                 return JsonResponse({'status': 'error', 'message': 'Invalid JSON data'}, status=400)
             
             for key, content in data.items():
-                file_name = f"occupied_{key}.json"
+                if key == "tables":  # Μόνο για το κλειδί 'tables'
+                    file_name = f"occupied_{key}.json"  # occupied_tables.json
+                else:
+                    file_name = f"{key}.json"  # Για όλα τα υπόλοιπα χωρίς το πρόθεμα
+
                 file_path = os.path.join(tenant_folder, file_name)
                 with open(file_path, 'w', encoding='utf-8') as file:
                     json.dump(content, file, ensure_ascii=False, indent=4)
@@ -132,7 +136,6 @@ def upload_json(request, tenant):
 
     logger.error("Invalid request method")
     return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
-
 
 
 

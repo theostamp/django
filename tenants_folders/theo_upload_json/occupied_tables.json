@@ -1,0 +1,81 @@
+{
+    "tables": [
+        {
+            "table_number": 1,
+            "occupied_since": "",
+            "duration": "",
+            "center_coordinates": [
+                424.0,
+                395.0,
+                644.0,
+                478.0
+            ]
+        },
+        {
+            "table_number": 2,
+            "occupied_since": "2024-08-24 21:15:53",
+            "duration": "22:28",
+            "center_coordinates": [
+                61.0,
+                291.0,
+                354.0,
+                387.0
+            ]
+        },
+        {
+            "table_number": 3,
+            "occupied_since": "2024-08-25 12:50:43",
+            "duration": "6:53",
+            "center_coordinates": [
+                563.0,
+                232.0,
+                663.0,
+                301.0
+            ]
+        },
+        {
+            "table_number": 4,
+            "occupied_since": "2024-08-24 21:15:53",
+            "duration": "22:28",
+            "center_coordinates": [
+                349.0,
+                191.0,
+                521.0,
+                257.0
+            ]
+        },
+        {
+            "table_number": 5,
+            "occupied_since": "2024-08-24 21:15:53",
+            "duration": "22:28",
+            "center_coordinates": [
+                190.0,
+                168.0,
+                341.0,
+                214.0
+            ]
+        },
+        {
+            "table_number": 6,
+            "occupied_since": "2024-08-25 12:50:43",
+            "duration": "6:53",
+            "center_coordinates": [
+                52.0,
+                144.0,
+                173.0,
+                194.0
+            ]
+        },
+        {
+            "table_number": 7,
+            "occupied_since": "",
+            "duration": "",
+            "center_coordinates": [
+                13.0,
+                219.0,
+                173.0,
+                273.0
+            ]
+        }
+    ]
+}
