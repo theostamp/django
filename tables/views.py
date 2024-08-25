@@ -116,7 +116,7 @@ def upload_json(request, tenant):
                 return JsonResponse({'status': 'error', 'message': 'Invalid JSON data'}, status=400)
             
             for key, content in data.items():
-                file_name = f"{key}.json"
+                file_name = f"occupied_{key}.json"
                 file_path = os.path.join(tenant_folder, file_name)
                 with open(file_path, 'w', encoding='utf-8') as file:
                     json.dump(content, file, ensure_ascii=False, indent=4)
@@ -237,8 +237,9 @@ def delete_received_orders(request, tenant):
 @csrf_exempt
 def check_occupied_tables(request, username):
     tenant_folder = os.path.join(workspace_folder, 'tenants_folders', f'{username}_upload_json/')
-    file_path = os.path.join(tenant_folder, 'tables.json')
-    
+    file_path = os.path.join(tenant_folder, 'occupied_tables.json')
+    file_path = os.path.join(tenant_folder, 'occupied_tables.json')
+
     if os.path.exists(file_path):
         with open(file_path, 'r', encoding='utf-8') as file:
             data = json.load(file)
@@ -299,8 +300,8 @@ def table_selection(request):
     tenant = connection.get_tenant()
     tenant_name = tenant.name
 
-    occupied_tables_file = os.path.join(workspace_folder, 'tenants_folders', f'{tenant_name}_upload_json', 'tables.json')
-
+    occupied_tables_file = os.path.join(workspace_folder, 'tenants_folders', f'{tenant_name}_upload_json', 'occupied_tables.json')
+   
     try:
         with open(occupied_tables_file, 'r') as file:
             tables_data = json.load(file)
@@ -372,7 +373,7 @@ def serve_reservations(request, tenant):
         return HttpResponseNotFound(f"File not found: {file_path}")
 
 def serve_occupied_tables(request, tenant):
-    file_path = os.path.join(workspace_folder, 'tenants_folders', f'{tenant}_upload_json', 'tables.json')
+    file_path = os.path.join(workspace_folder, 'tenants_folders', f'{tenant}_upload_json', 'occupied_tables.json')
     logger.debug(f"Serving file: {file_path}")
 
     if os.path.exists(file_path):
@@ -828,7 +829,7 @@ def table_selection_with_time_diff(request):
     tenant = connection.get_tenant()
     tenant_name = tenant.name
 
-    occupied_tables_file = os.path.join(workspace_folder, 'tenants_folders', f'{tenant_name}_upload_json', 'tables.json')
+    occupied_tables_file = os.path.join(workspace_folder, 'tenants_folders', f'{tenant_name}_upload_json', 'occupied_tables.json')
 
     if not os.path.exists(occupied_tables_file):
         logger.error(f"Occupied tables file not found: {occupied_tables_file}")
@@ -892,7 +893,7 @@ def get_time_diff_from_file(tenant_name, table_number):
 
 def get_occupied_tables(request, tenant):
     tenant_folder = os.path.join(workspace_folder, 'tenants_folders', f'{tenant}_upload_json')
-    file_path = os.path.join(tenant_folder, 'tables.json')
+    file_path = os.path.join(tenant_folder, 'occupied_tables.json')
 
     if not os.path.exists(file_path):
         return HttpResponseNotFound('File not found')

@@ -19,7 +19,7 @@ class TablesConfig(AppConfig):
             os.makedirs(received_orders_folder, exist_ok=True)
 
             # Δημιουργία κενών αρχείων JSON αν δεν υπάρχουν
-            self.create_empty_json(os.path.join(tenant_folder, 'tables.json'), {"tables": []})
+            self.create_empty_json(os.path.join(tenant_folder, 'occupied_tables.json'), {"tables": []})
             self.create_empty_json(os.path.join(tenant_folder, 'products.json'), {"products": []})
             self.create_empty_json(os.path.join(tenant_folder, 'reservations.json'), {"reservations": []})
             self.create_empty_json(os.path.join(tenant_folder, 'occupied_tables.json'), {"tables": []})

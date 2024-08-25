@@ -248,6 +248,10 @@
             return duration;
         }
 
+
+
+
+
         function createTableButtons(tables, positions, reservations) {
             console.log('Creating table buttons...');
             const container = document.querySelector('.tables-container');
@@ -276,6 +280,7 @@
                 button.style.position = 'absolute';
                 button.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.6)';
 
+                // Position the button
                 if (positions[button.id]) {
                     button.style.left = `${positions[button.id].x}px`;
                     button.style.top = `${positions[button.id].y}px`;
@@ -288,13 +293,23 @@
                 button.style.height = `${buttonSize}px`;
                 button.style.margin = `${margin}px`;
 
+                // Create table number div
                 const tableNumberDiv = document.createElement('div');
                 tableNumberDiv.className = 'table-number';
                 tableNumberDiv.style.fontSize = `${fontSize}px`;
                 tableNumberDiv.textContent = `${table.table_number}`;
                 button.appendChild(tableNumberDiv);
 
-                if (table.time_diff && table.time_diff !== 'N/A') {
+                // Handle time_diff and status
+                if (table.order_status && table.order_status.startsWith("PENDING") && table.order_status.includes("0")) {
+                    console.log(`Table ${table.table_number} served ok.`);
+                    const timeDiffDiv = document.createElement('div');
+                    timeDiffDiv.className = 'time-diff';
+                    timeDiffDiv.style.fontSize = `${fontSize * 0.6}px`;
+                    timeDiffDiv.textContent = `served ok`;
+                    button.appendChild(timeDiffDiv);
+                    button.style.backgroundColor = '#4CAF50';
+                } else if (table.time_diff && table.time_diff !== 'N/A') {
                     console.log(`Table ${table.table_number} has time_diff: ${table.time_diff}`);
                     const timeDiffDiv = document.createElement('div');
                     timeDiffDiv.className = 'time-diff';
@@ -314,6 +329,7 @@
                     button.style.color = '#000';
                 }
 
+                // Handle order status
                 if (table.order_status) {
                     console.log(`Table ${table.table_number} has order status: ${table.order_status}`);
                     const statusBannerDiv = document.createElement('div');
@@ -329,6 +345,7 @@
                     button.appendChild(statusBannerDiv);
                 }
 
+                // Handle reservations
                 const reservation = reservations.find(res => res.table_number === table.table_number);
                 if (reservation) {
                     console.log(`Table ${table.table_number} is reserved.`);
@@ -352,6 +369,9 @@
                 container.appendChild(button);
             });
         }
+
+
+
 
         function arrangeButtons() {
             const container = document.querySelector('.tables-container');
