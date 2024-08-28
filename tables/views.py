@@ -694,6 +694,7 @@ def update_order_status_in_json(order_id, new_status=1):
     except Exception as e:
         print(f"Error in update_order_status_in_json: {e}")
         return False, str(e)
+    
 
 def update_order_status_in_folder(order_id, new_status=1, folder_path=None):
     try:
@@ -711,6 +712,14 @@ def update_order_status_in_folder(order_id, new_status=1, folder_path=None):
 
                 if str(order.get('order_id')) == str(order_id):
                     print(f"Updating order with ID: {order_id}")
+                    
+                    # Διατήρηση της αρχικής τιμής του time_diff
+                    if 'time_diff' not in order or order['time_diff'] is None:
+                        order_time = datetime.strptime(order['timestamp'], "%Y-%m-%d %H:%M:%S")
+                        current_time = datetime.now()
+                        time_passed = int((current_time - order_time).total_seconds() // 60)
+                        order['time_diff'] = time_passed
+
                     order['order_done'] = new_status
                     order_found = True
 
@@ -726,6 +735,7 @@ def update_order_status_in_folder(order_id, new_status=1, folder_path=None):
     except Exception as e:
         print(f"Error in update_order_status_in_folder: {e}")
         return False, str(e)
+
 
 @csrf_exempt
 def update_order(request):

@@ -5,13 +5,10 @@ git fetch origin
 git reset --hard origin/main
 ##
 
-
-
-
 git init
 
 git add .
-git commit -m "fix occupied_tables.json 1"
+git commit -m "fix occupied_tables.json 4"
 git branch -M main
 git remote add origin https://github.com/theostamp/django.git
 git push -u origin main 

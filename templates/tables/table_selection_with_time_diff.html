@@ -132,14 +132,20 @@
                 }
                 const tables = await response.json();
                 console.log('Tables data:', tables);
-                await loadTimeDiffs(tables, tenant);
-                const reservations = await loadReservations(tenant);
-                const positions = await loadButtonPositions();
+
+                // Χρήση Promise.all για ταυτόχρονη φόρτωση των δεδομένων
+                const [timeDiffs, reservations, positions] = await Promise.all([
+                    loadTimeDiffs(tables, tenant), // Φορτώνει τα timeDiffs
+                    loadReservations(tenant),      // Φορτώνει τις κρατήσεις
+                    loadButtonPositions()          // Φορτώνει τις θέσεις των κουμπιών
+                ]);
+
                 createTableButtons(tables, positions, reservations);
             } catch (error) {
                 console.error('Error loading tables:', error);
             }
         }
+
 
         async function loadReservations(tenant) {
             try {
