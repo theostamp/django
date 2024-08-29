@@ -54,9 +54,10 @@
 <body>
     <div class="container">
         <div class="back-button">
-            <a href="#" id="backToSelection">
+            <a href="{% url 'table_selection' %}" id="backToSelection">
                 <img src="{% static 'images/back.png' %}" alt="Back Page" style="height: 50px;">
-            </a> 
+            </a>
+            
         <h2>Table {{ table_number }}</h2>
         </div>
       
@@ -105,7 +106,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             const waiterName = localStorage.getItem('waiterName') || 'Default';
             const backLink = document.getElementById('backToSelection');
-            backLink.href = `/table_selection?name=${waiterName}`;
+            backLink.href = `{% url 'table_selection' %}?name=${waiterName}`;
         });
 
         document.getElementById('submit-order').addEventListener('click', function() {

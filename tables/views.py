@@ -29,6 +29,9 @@ from django.urls import set_urlconf
 from django.utils.deprecation import MiddlewareMixin
 from django.views.decorators.cache import never_cache
 import hashlib
+from django.urls import reverse
+
+# url = reverse('tables:table_selection')
 
 
 # Ρύθμιση του logging

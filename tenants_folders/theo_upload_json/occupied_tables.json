@@ -2,24 +2,24 @@
     "tables": [
         {
             "table_number": 1,
-            "occupied_since": "2024-08-28 23:07:35",
-            "duration": "11:37",
+            "occupied_since": "2024-08-29 19:49:58",
+            "duration": "3:54",
             "center_coordinates": [
-                144.0,
-                230.0,
-                405.0,
-                328.0
+                135.0,
+                229.0,
+                443.0,
+                334.0
             ]
         },
         {
             "table_number": 2,
-            "occupied_since": "2024-08-28 22:20:45",
-            "duration": "12:23",
+            "occupied_since": "",
+            "duration": "",
             "center_coordinates": [
-                358.0,
-                148.0,
-                538.0,
-                213.0
+                385.0,
+                143.0,
+                545.0,
+                211.0
             ]
         },
         {
@@ -27,10 +27,10 @@
             "occupied_since": "",
             "duration": "",
             "center_coordinates": [
-                579.0,
-                180.0,
-                656.0,
-                219.0
+                204.0,
+                138.0,
+                343.0,
+                191.0
             ]
         },
         {
@@ -38,21 +38,21 @@
             "occupied_since": "",
             "duration": "",
             "center_coordinates": [
-                572.0,
-                231.0,
-                665.0,
-                323.0
+                570.0,
+                241.0,
+                646.0,
+                315.0
             ]
         },
         {
             "table_number": 5,
-            "occupied_since": "2024-08-28 22:20:45",
-            "duration": "12:23",
+            "occupied_since": "",
+            "duration": "",
             "center_coordinates": [
-                201.0,
-                145.0,
-                322.0,
-                203.0
+                585.0,
+                168.0,
+                645.0,
+                229.0
             ]
         }
     ]
