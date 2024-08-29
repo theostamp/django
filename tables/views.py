@@ -737,6 +737,12 @@ def update_order_status_in_folder(order_id, new_status=1, folder_path=None):
         return False, str(e)
 
 
+
+
+
+
+
+
 @csrf_exempt
 def update_order(request):
     try:
