@@ -64,13 +64,14 @@ ALLOWED_HOSTS = ['localhost', '*', '[::1]', 'dign-fkh0cyakasa6cqf4.eastus-01.azu
 SHARED_APPS = [
     'django_tenants',
     'paypal.standard.ipn',
+    'django.contrib.staticfiles',
     'authentication.apps.AuthenticationConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
+    
     'corsheaders',
     'rest_framework',
 ]

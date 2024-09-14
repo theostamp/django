@@ -1,0 +1,13 @@
+{
+    "table_number": 2,
+    "product_description": "fanta",
+    "quantity": "1",
+    "total_cost": 3.0,
+    "waiter": null,
+    "order_done": false,
+    "printed": false,
+    "order_id": "1340061",
+    "timestamp": "2024-09-14 13:40:06",
+    "time_diff": 12,
+    "time_passed": 12
+}
