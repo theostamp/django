@@ -8,7 +8,7 @@ git reset --hard origin/main
 git init
 
 git add .
-git commit -m "fix back to select"
+git commit -m "fix back to select 1"
 git branch -M main
 git remote add origin https://github.com/theostamp/django.git
 git push -u origin main 
