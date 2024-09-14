@@ -55,6 +55,11 @@ except ImportError:
     logger.error("Το πακέτο getmac δεν είναι εγκατεστημένο. Εγκαταστήστε το με `pip install getmac`.")
 
 
+
+@csrf_exempt
+def check_connection(request):
+    return JsonResponse({'status': 'success', 'message': 'Server is up and running.'})
+
 @login_required
 def check_login(request):
     """
