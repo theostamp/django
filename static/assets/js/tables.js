@@ -129,56 +129,38 @@ window.onload = function() {
         const buttonSize = Math.min(containerWidth, containerHeight) / 5;
         const fontSize = buttonSize / 5;
         const margin = buttonSize / 8;
-    
+
         tables.tables.forEach((table) => {
             const button = document.createElement('a');
             button.id = `table-${table.table_number}`;
             button.href = `/table_orders/${getTenantFromHostname()}/${table.table_number}/`;
             button.className = 'table-button';
-    
+
             button.style.width = `${buttonSize}px`;
             button.style.height = `${buttonSize}px`;
-    
+
             if (positions[button.id]) {
                 button.style.left = `${positions[button.id].x}px`;
                 button.style.top = `${positions[button.id].y}px`;
             }
-    
-            // Δημιουργία του αριθμού τραπεζιού
+
             const tableNumberDiv = document.createElement('div');
             tableNumberDiv.className = 'table-number';
             tableNumberDiv.textContent = `Table ${table.table_number}`;
             button.appendChild(tableNumberDiv);
-    
-            // Έλεγχος αν υπάρχει κρατήση ή παραγγελία
-            if (table.order_status) {
-                // Αλλαγή χρώματος για τραπέζι με παραγγελία
-                button.style.backgroundColor = '#4CAF50';  // Πράσινο για παραγγελίες
-                const statusBannerDiv = document.createElement('div');
-                statusBannerDiv.className = 'status-banner';
-                statusBannerDiv.textContent = 'Order In Progress';
-                button.appendChild(statusBannerDiv);
-            } else if (table.reservation_status) {
-                // Αλλαγή χρώματος για τραπέζι με κρατήση
-                button.style.backgroundColor = '#FFC107';  // Κίτρινο για κρατήσεις
-                const reservedBannerDiv = document.createElement('div');
-                reservedBannerDiv.className = 'reserved-banner';
-                reservedBannerDiv.textContent = 'Reserved';
-                button.appendChild(reservedBannerDiv);
-            } else {
-                // Προκαθορισμένο χρώμα για ελεύθερα τραπέζια
-                button.style.backgroundColor = '#FF5722';  // Κόκκινο για ελεύθερα τραπέζια
-            }
-    
-            // Προσθήκη του χρόνου εξυπηρέτησης, αν υπάρχει
+
             if (table.time_diff) {
                 const timeDiffDiv = document.createElement('div');
                 timeDiffDiv.className = 'time-diff';
                 timeDiffDiv.textContent = `Served ${table.time_diff}`;
                 button.appendChild(timeDiffDiv);
             }
-    
+
             container.appendChild(button);
         });
     }
-}
+
+    function getTenantFromHostname() {
+        return window.location.hostname.split('.')[0];
+    }
+};
