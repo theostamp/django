@@ -5,16 +5,14 @@ from decouple import config  # Προσθήκη της σωστής εισαγω
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# URL to use when referring to static files located in STATIC_ROOT.
 STATIC_URL = '/static/'
 
-# The absolute path to the directory where collectstatic will collect static files for deployment.
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-# Additional locations the staticfiles app will traverse if the FileSystemFinder finder is enabled.
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 
 # URL to use when referring to media files
 MEDIA_URL = '/media/'
@@ -93,6 +91,8 @@ INSTALLED_APPS = list(SHARED_APPS) + [app for app in TENANT_APPS if app not in S
 MIDDLEWARE = [
     'django_tenants.middleware.main.TenantMainMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    # Add whitenoise middleware after the security middleware
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -100,6 +100,12 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 ROOT_URLCONF = 'azureproject.urls'

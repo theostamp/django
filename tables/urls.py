@@ -2,6 +2,8 @@
 
 from django.urls import path
 from . import views
+from django.conf import settings
+from django.conf.urls.static import static
 # app_name = 'tables'
 
 urlpatterns = [
@@ -43,3 +45,6 @@ urlpatterns = [
     path('table_orders/<str:tenant>/<int:table_number>/', views.table_orders, name='table_orders'),
     path('check_permissions/', views.check_permissions, name='check_permissions'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

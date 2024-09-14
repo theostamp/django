@@ -4,6 +4,8 @@ from django.contrib import admin
 from django.urls import include, path
 from authentication.views import  check_connection, check_subscription_status, check_mac_address, register_mac_address, check_login, index, payment_error,get_mac_address, register_mac_address
 from tables.views import check_permissions, table_orders, serve_reservations, serve_occupied_tables, update_time_diff, serve_order_file, get_occupied_tables, list_received_orders, test_read_file, order_details, load_positions, check_for_refresh, save_positions,signal_refresh_order_summary, delete_received_orders, get_orders,cancel_order,delete_order_file, process_orders, update_order,  get_json,get_orders_json, success,submit_order, order_for_table,table_selection,get_order,order_summary, table_selection_with_time_diff, upload_json,products_json,list_order_files
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
 
@@ -74,3 +76,5 @@ urlpatterns = [
 
 
 ]
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
