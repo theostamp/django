@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {% load static %}
+    <title>Επιτυχία Παραγγελίας</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        .container {
+            width: 360px;
+            margin: auto;
+            overflow:visible;
+            align-items: center;
+        }
+
+        h2 {
+            text-align: center;
+            margin-top: 1px;
+            color: #fdfdfd; /* Χρώμα τίτλου */
+            font-size: 15px;
+            background-color: rgb(3, 75, 209);
+            padding: 5%;
+            font-family: Verdana, Geneva, Tahoma, sans-serif, "Helvetica Neue", Helvetica, sans-serif;
+            
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Η παραγγελία καταχωρήθηκε επιτυχώς!</h2>
+        <img src="{% static 'images/success.png' %}" alt="Success" style="display: block; margin: auto;">
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const waiterName = localStorage.getItem('waiterName') || 'unknown'; // Παίρνουμε το όνομα από την τοπική αποθήκευση
+
+            setTimeout(function() {
+                window.location.href = `/tables/table_selection/?name=${waiterName}`; // Ανακατεύθυνση με το όνομα του σερβιτόρου
+            }, 2000); // 2000 milliseconds = 2 δευτερόλεπτα
+        });
+    </script>
+</body>
+</html>
