@@ -43,6 +43,13 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Subscription, Tenant
+from django.shortcuts import render, redirect
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import authenticate, login
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+from django.contrib import messages
+
 # Εισαγωγή του logger
 logger = logging.getLogger(__name__)
 import requests
@@ -560,6 +567,21 @@ def login_view(request):
         form = CustomUserLoginForm()
 
     return render(request, 'authentication/login.html', {'form': form})
+
+
+def app_login_view(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            return HttpResponseRedirect(reverse('index'))  # Κατεύθυνση σε μια άλλη σελίδα μετά τη σύνδεση
+    else:
+        form = AuthenticationForm()
+
+    return render(request, 'authentication/app_login.html', {'form': form})
+
+
 
 @login_required
 def profile_view(request):

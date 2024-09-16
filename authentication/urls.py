@@ -1,13 +1,14 @@
 # authentication/urls.py
 from django.urls import path, include
 from . import views
-from .views import create_paypal_plan, check_mac_address, register_mac_address, get_mac_address
+from .views import app_login_view, create_paypal_plan, check_mac_address, register_mac_address, get_mac_address
 
 urlpatterns = [
     path('register/', views.register, name='register'),
     path('setup_url/', views.setup_url, name='setup_url'),
     path('user-credits/', views.user_credits, name='user_credits'),
     path('select_subscription/', views.select_subscription, name='select_subscription'),
+   
     path('login/', views.login_view, name='login'),
     path('features/', views.features, name='features'),
     path('integrations/', views.integrations, name='integrations'),
@@ -38,4 +39,6 @@ urlpatterns = [
     path('api/register-mac-address/<str:username>/', register_mac_address, name='register_mac_address'),
     path('api/get-mac-address/<str:username>/', get_mac_address, name='get_mac_address'),
     path('paypal/create-plan/', create_paypal_plan, name='create_paypal_plan'),
+    path('app-login/', views.app_login_view, name='app_login'),
+
 ]
