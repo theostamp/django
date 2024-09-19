@@ -5,14 +5,15 @@ services:
     build:
       context: ..
       dockerfile: .devcontainer/Dockerfile
-
     volumes:
       - ..:/workspace:cached
-
-    # Overrides default command so things don't shut down after the process ends.
     command: sleep infinity
-
-    # Runs app on the same network as the database container, allows "forwardPorts" in devcontainer.json function.
+    depends_on:
+      - db
+      - redis
+    environment:
+      DATABASE_URL: postgres://app_user:app_password@db:5432/app
+      REDIS_URL: redis://redis:6379/0
     network_mode: service:db
 
   db:
@@ -25,12 +26,22 @@ services:
       POSTGRES_USER: app_user
       POSTGRES_PASSWORD: app_password
 
-    # Add "forwardPorts": ["5432"] to **devcontainer.json** to forward PostgreSQL locally.
-    # (Adding the "ports" property to this file will not forward from a Codespace.)
-
   redis:
     image: redis
     restart: unless-stopped
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com  # Το email για login στο pgAdmin
+      PGADMIN_DEFAULT_PASSWORD: admin  # Ο κωδικός για το pgAdmin
+    ports:
+      - "8080:80"  # Προώθηση της θύρας 80 του container στη θύρα 8080 του host
+    depends_on:
+      - db
+    networks:
+      - default  # Προσθήκη του pgAdmin στο ίδιο δίκτυο με τη βάση
 
 volumes:
   postgres-data:

@@ -3,7 +3,7 @@
         {
             "table_number": 1,
             "occupied_since": "2024-09-15 22:15:56",
-            "duration": "8:00",
+            "duration": "84:36",
             "center_coordinates": [
                 983.0,
                 202.0,
@@ -14,7 +14,7 @@
         {
             "table_number": 2,
             "occupied_since": "2024-09-15 22:15:56",
-            "duration": "8:00",
+            "duration": "84:36",
             "center_coordinates": [
                 679.0,
                 167.0,
@@ -25,7 +25,7 @@
         {
             "table_number": 3,
             "occupied_since": "2024-09-15 22:15:56",
-            "duration": "8:00",
+            "duration": "84:36",
             "center_coordinates": [
                 860.0,
                 280.0,
@@ -36,7 +36,7 @@
         {
             "table_number": 4,
             "occupied_since": "2024-09-15 22:15:56",
-            "duration": "8:00",
+            "duration": "84:36",
             "center_coordinates": [
                 389.0,
                 220.0,
@@ -58,7 +58,7 @@
         {
             "table_number": 6,
             "occupied_since": "2024-09-15 22:15:56",
-            "duration": "8:00",
+            "duration": "84:36",
             "center_coordinates": [
                 451.0,
                 530.0,
@@ -80,7 +80,7 @@
         {
             "table_number": 8,
             "occupied_since": "2024-09-15 22:15:56",
-            "duration": "8:00",
+            "duration": "84:36",
             "center_coordinates": [
                 84.0,
                 443.0,

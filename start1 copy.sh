@@ -1,21 +1,11 @@
 #!/bin/bash
-
-# Εγκατάσταση των απαραίτητων πακέτων
 python3 -m pip install -r requirements.txt
 python z_clear_cache.py
 python z_clear.py
 
-# Αναμονή για PostgreSQL
-echo "Waiting for PostgreSQL to be available..."
-while ! pg_isready -h db -p 5432 -U app_user; do
-  sleep 1
-done
-
-echo "PostgreSQL is available. Continuing..."
-
 echo "Running migrations..."
 python manage.py makemigrations authentication
-python manage.py makemigrations tables
+python manage.py makemigrations  tables
 python manage.py makemigrations
 python manage.py migrate authentication --noinput || echo "Migrate authentication failed"
 python manage.py migrate tables --noinput || echo "Migrate tables failed"
@@ -54,6 +44,7 @@ try:
 except Exception as e:
     print(f"Error creating domain: {e}")
 END
+
 
 echo "Starting server..."
 cp .env.sample.devcontainer .env
