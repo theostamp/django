@@ -1,9 +1,9 @@
+# odoo_connect/urls
+
 from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('payments/', views.list_payments, name='list_payments'),
-    path('invoices/', views.list_invoices, name='list_invoices'),
-    path('sales/', views.list_sales, name='list_sales'),
-    path('products/', views.list_products, name='list_products'),
+    path('odoo-products/', views.list_odoo_products, name='list_odoo_products'),
 ]
+

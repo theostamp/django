@@ -1,22 +1,21 @@
 from django.shortcuts import render
-from .models import Payment, Invoice, Sale, Product
+import xmlrpc.client
 
-def list_payments(request):
-    tenant = request.tenant  # Ανάκτηση του tenant από το request
-    payments = Payment.objects.filter(tenant=tenant)
-    return render(request, 'odoo_connect/payments.html', {'payments': payments})
+# Στοιχεία σύνδεσης
+ODOO_URL = 'https://oikonrg.odoo.com'
+ODOO_DB = 'oikonrg'
+ODOO_USERNAME = 'theostam1966@gmail.com'
+ODOO_PASSWORD = 'theo123@@@'
 
-def list_invoices(request):
-    tenant = request.tenant
-    invoices = Invoice.objects.filter(tenant=tenant)
-    return render(request, 'odoo_connect/invoices.html', {'invoices': invoices})
+def list_odoo_products(request):
+    # Σύνδεση με το Odoo
+    common = xmlrpc.client.ServerProxy(f'{ODOO_URL}/xmlrpc/2/common')
+    uid = common.authenticate(ODOO_DB, ODOO_USERNAME, ODOO_PASSWORD, {})
 
-def list_sales(request):
-    tenant = request.tenant
-    sales = Sale.objects.filter(tenant=tenant)
-    return render(request, 'odoo_connect/sales.html', {'sales': sales})
-
-def list_products(request):
-    tenant = request.tenant
-    products = Product.objects.filter(tenant=tenant)
-    return render(request, 'odoo_connect/products.html', {'products': products})
+    if uid:
+        models = xmlrpc.client.ServerProxy(f'{ODOO_URL}/xmlrpc/2/object')
+        products = models.execute_kw(ODOO_DB, uid, ODOO_PASSWORD, 'product.product', 'search_read', [[]], {'fields': ['name', 'list_price'], 'limit': 10})
+        
+        return render(request, 'odoo_connect/product_list.html', {'products': products})
+    else:
+        return render(request, 'odoo_connect/error.html', {'message': 'Authentication failed'})

@@ -17,7 +17,7 @@ class Invoice(models.Model):
     customer_name = models.CharField(max_length=255)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     issue_date = models.DateField()
-    status = models.CharField(maxlength=50)
+    status = models.CharField(max_length=50)
 
     def __str__(self):
         return f"Invoice {self.invoice_id} - {self.customer_name}"

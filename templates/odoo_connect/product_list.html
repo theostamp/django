@@ -1,0 +1,6 @@
+<h1>Product List from Odoo</h1>
+<ul>
+    {% for product in products %}
+        <li>{{ product.name }} - {{ product.list_price }} €</li>
+    {% endfor %}
+</ul>
