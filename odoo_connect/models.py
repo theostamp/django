@@ -1,5 +1,17 @@
 from django.db import models
-from authentication.models import Tenant  # Σύνδεση με τους tenants
+from django_tenants.models import TenantMixin
+from authentication.models import Tenant  # Αναφέρεται το μοντέλο Tenant που ήδη έχεις δημιουργήσει
+
+class Product(models.Model):
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)  # Συσχετίζουμε το προϊόν με τον tenant
+    product_id = models.CharField(max_length=100, unique=True)
+    name = models.CharField(max_length=255)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    stock = models.IntegerField()
+
+    def __str__(self):
+        return self.name
+
 
 class Payment(models.Model):
     tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)  # Συσχέτιση με τον tenant
@@ -33,12 +45,3 @@ class Sale(models.Model):
     def __str__(self):
         return f"Sale {self.sale_id} - {self.product.name} ({self.quantity})"
 
-class Product(models.Model):
-    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)  # Συσχέτιση με τον tenant
-    product_id = models.CharField(max_length=100, unique=True)
-    name = models.CharField(max_length=255)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    stock = models.IntegerField()
-
-    def __str__(self):
-        return self.name
